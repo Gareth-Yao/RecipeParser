@@ -69,7 +69,6 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
         ingredients.append(ing_info)
 
 
-trial = 'https://www.allrecipes.com/recipe/200296/salmon-wellington/'
-#trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
+trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
