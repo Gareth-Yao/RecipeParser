@@ -1,6 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 import unicodedata
+from nltk import pos_tag, word_tokenize
+from fuzzywuzzy import fuzz
+import re
 
 def convertUnicode(s):
     newStr = ""
@@ -37,6 +40,19 @@ def fetchAndParseHTML(url):
         return {}
 
 
+def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
+    measure_words=['spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb']
+    amount_re = '/[1-9][0-9]*(?:\/[1-9][0-9])*/g'
+    ingredients = {}
+    for ing in all_ingredients:
+        i = {}
+        descs = pos_tag(word_tokenize(ing))
+        q = [token[0] for token in descs if token[1]=='CD']
+        i['quantity'] = 0 if len(q)==0 else q[0]
+        print(i['quantity'])
 
-trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
-fetchAndParseHTML(trial)
+
+trial = 'https://www.allrecipes.com/recipe/216754/salmon-with-raspberry-ginger-glaze/'
+#trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
+result = fetchAndParseHTML(trial)
+ingredients_parsed = get_ingredients(result["ingredients"])
