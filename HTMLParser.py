@@ -41,7 +41,8 @@ def fetchAndParseHTML(url):
 
 
 def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
-    measure_words=['tablespoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb','package']
+    measure_words=['tablespoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb','package','wedge','sheet']
+    descriptor_words=['skin','bone','fine','parts']
     ingredients = []
     for ing in all_ingredients:
         ing = re.sub('\(.*\)', '', ing)
@@ -52,23 +53,48 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
         q2 = 0 if len(q) == 0 else sum([float(i) for i in q])
         ing_info['quantity'] = q2 if (type(q2) is float and q2.is_integer() == False) else int(q2)
         # measurement
-        measure = ''
-        nouns = [a[0] for a in descs if a[1]=='NN' or a[1]=='NNS' or a[1]=='NNP'] 
+        measure, descriptors = '', []
+        nouns = [a[0] for a in descs if (a[1]=='NN' or a[1]=='NNS' or a[1]=='NNP')]
         for n in nouns:
             for m in measure_words:
                 if fuzz.ratio(n, m) > 70:
                     measure = n
                     break
-            if measure != '':
+            for d in descriptor_words:
+                if fuzz.partial_ratio(n, d) > 90:
+                    descriptors.append(n)
+            if measure!='':
                 break
-        ing_info['measurement'] = measure
         # name
+        other_descs = [d[0] for d in descs if (d[1]=='JJ' or d[1]=='RB') and d[0] != measure]
         if measure!='':
-            nouns.remove(measure)    
+            nouns.remove(measure)
+            nouns = [n for n in nouns if n not in descriptors]
+        else:
+            for d in other_descs:
+                for m in measure_words:
+                    if fuzz.ratio(d,m) > 70:
+                        measure = d
+                        other_descs.remove(d)
+                        break
+        ing_info['measurement'] = measure
         ing_info['name'] = ' '.join(nouns)
+        # descriptor
+        descriptors.extend(other_descs)
+        ing_info['descriptor'] = descriptors
+        # preparation
+        prep = [a[0] for a in descs if a[1]=='VBD' or a[1]=='VB' or a[1]=='VBN' or a[1]=='VBP']
+        for i in range(len(prep)):
+            if prep[i] == 'taste':
+                prep[i] = 'to taste'
+            elif prep[i] == 'needed':
+                prep.remove(prep[i])
+        ing_info['preparation'] = prep
+        print(ing_info)
+        print()
         ingredients.append(ing_info)
 
-
+#trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
 trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
