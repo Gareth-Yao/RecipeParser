@@ -42,7 +42,7 @@ def fetchAndParseHTML(url):
 
 def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
     measure_words=['tablespoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb','package']
-    ingredients = {}
+    ingredients = []
     for ing in all_ingredients:
         ing = re.sub('\(.*\)', '', ing)
         print(ing)
@@ -50,7 +50,7 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
         # quantity
         q = [a[0] for a in descs if a[1] == 'CD']
         q2 = 0 if len(q) == 0 else sum([float(i) for i in q])
-        ing_info['quantity'] = int(q2) if q2.is_integer() else q2
+        ing_info['quantity'] = q2 if (type(q2) is float and q2.is_integer() == False) else int(q2)
         # measurement
         measure = ''
         nouns = [a[0] for a in descs if a[1]=='NN' or a[1]=='NNS' or a[1]=='NNP'] 
@@ -62,25 +62,11 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
             if measure != '':
                 break
         ing_info['measurement'] = measure
-        print(ing_info['quantity'])
-        print(ing_info['measurement'])
-    # for ing in all_ingredients:
-    #     i, descs, q = {}, pos_tag(word_tokenize(ing)), -1
-    #     ing = re.sub(r'\([^)]*\)', '', ing)
-    #     print(ing)
-    #     for token in descs:
-    #         if token[1] == 'CD':
-    #             q, q_index = token[0], descs.index(token)
-    #     i['quantity'] = 0 if q==-1 else q
-    #     measure = ''
-    #     if q_index + 1 < len(descs):
-    #         for m in measure_words:
-    #             if fuzz.ratio(m, descs[q_index+1][0]) > 70:
-    #                 measure = descs[q_index+1][0]
-    #                 break
-    #     i['measurement'] = measure
-    #     print(i['quantity'])
-    #     print(i['measurement'])
+        # name
+        if measure!='':
+            nouns.remove(measure)    
+        ing_info['name'] = ' '.join(nouns)
+        ingredients.append(ing_info)
 
 
 trial = 'https://www.allrecipes.com/recipe/200296/salmon-wellington/'
