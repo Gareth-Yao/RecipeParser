@@ -93,8 +93,9 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
         print(ing_info)
         print()
         ingredients.append(ing_info)
+    return ingredients
 
 #trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
-trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
-result = fetchAndParseHTML(trial)
-ingredients_parsed = get_ingredients(result["ingredients"])
+# trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
+# result = fetchAndParseHTML(trial)
+# ingredients_parsed = get_ingredients(result["ingredients"])
