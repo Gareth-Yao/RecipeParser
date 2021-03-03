@@ -43,14 +43,11 @@ def fetchAndParseHTML(url):
 
 
 def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
-    measure_words=['tablespoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','stalk','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb','package','wedge','sheet','cube']
+    measure_words=['tablespoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb','package','wedge','sheet','cube']
     descriptor_words=['skin','bone','fine','parts']
     ingredients = []
-    print(all_ingredients)
-    for ingr in all_ingredients:
-        lolz = ingr.split(',')
-        ing = re.sub('\(.*\)', '', lolz[0])
-        prep_tokens = lolz[1:] if len(lolz) > 1 else []
+    for ing in all_ingredients:
+        ing = re.sub('\(.*\)', '', ing)
         descs, ing_info = pos_tag(word_tokenize(ing)), {}
         # quantity
         q = [a[0] for a in descs if a[1] == 'CD']
@@ -87,19 +84,15 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
         descriptors.extend(other_descs)
         ing_info['descriptor'] = descriptors
         # preparation
-        prep = []
-        for p in prep_tokens:
-            p = p.strip().split(' and ')
-            prep.extend(p)
-        for a in descs:
-            if a[1]=='VBD' or a[1]=='VB' or a[1]=='VBN' or a[1]=='VBP':
-                if a[0] == 'taste':
-                    prep.append('to taste')
-                elif a[0] != 'needed':
-                    prep.append(a[0])
+        prep = [a[0] for a in descs if a[1]=='VBD' or a[1]=='VB' or a[1]=='VBN' or a[1]=='VBP']
+        for i in range(len(prep)):
+            if prep[i] == 'taste':
+                prep[i] = 'to taste'
+            elif prep[i] == 'needed':
+                prep.remove(prep[i])
         ing_info['preparation'] = prep
         ingredients.append(ing_info)
-        print(ing_info)
+        #print(ing_info)
     return ingredients
 
 def to_vegetarian(ings):
@@ -120,12 +113,12 @@ def from_vegetarian(ings):
     pass
 
 
-#trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
+trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
 #trial = 'https://www.allrecipes.com/recipe/234799/poor-mans-stroganoff/'
-trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
+#trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
 #trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
-#print(ingredients_parsed)
+print(ingredients_parsed)
 veg = to_vegetarian(ingredients_parsed)
 #print(veg)
