@@ -4,7 +4,7 @@ import unicodedata
 from nltk import pos_tag, word_tokenize
 from fuzzywuzzy import fuzz
 import re
-from ingredients import meats, seafood, vegetarian_subs, herbs_spices
+from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs
 import random
 
 def convertUnicode(s):
@@ -43,7 +43,7 @@ def fetchAndParseHTML(url):
 
 
 def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
-    measure_words=['tablespoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb','package','wedge','sheet','cube','stalk','thirds']
+    measure_words=['tablespoon','teaspoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','clove','fillet','filet','bottle','liter','gram','lb','package','wedge','sheet','cube','stalk','thirds']
     descriptor_words=['optional','skin','bone','fine','parts','dried','ground']
     ingredients = []
     for ing in all_ingredients:
@@ -58,11 +58,10 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
         q2 = 0 if len(q) == 0 else sum([float(i) for i in q])
         ing_info['quantity'] = q2 if (type(q2) is float and q2.is_integer() == False) else int(q2)
         # measurement
-        nouns = [a[0] for a in descs if ((a[1]=='NN' or a[1]=='NNS' or a[1]=='NNP') or a[0] in herbs_spices or a[0]=='can' or a[0]=='cans') and a[0] not in descriptor_words]
-        print(descs)
+        nouns = [a[0] for a in descs if ((a[1]=='NN' or a[1]=='NNS' or a[1]=='NNP') or a[0] in herbs_spices or a[0]=='can' or a[0]=='cans' or a[0] in seafood or a[0] in meats) and a[0] not in descriptor_words]
         for n in nouns:
             for m in measure_words:
-                if fuzz.ratio(n, m) > 70 and n != 'inch':
+                if fuzz.ratio(n, m) > 80 and n != 'inch':
                     measure = n
                     break
             for d in descriptor_words:
@@ -98,7 +97,6 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
                 prep.remove(prep[i])
         ing_info['preparation'] = prep
         ingredients.append(ing_info)
-        print(ing_info)
     return ingredients
 
 def to_vegetarian(ings):
@@ -109,17 +107,27 @@ def to_vegetarian(ings):
         for t in tokens:
             if t in meats or t+'s' in meats or t in seafood or t+'s' in seafood:
                 ran = random.choice(replaced)
-                ing['name'] = ran 
+                ings[i] = ran
                 replaced.remove(ran)
                 break
     return ings
 
 def from_vegetarian(ings):
-    # converts a recipe from vegetarian to non vegetarian by replacing with meat ingredients 
-    pass
+    # check if vegetarian. if yes, converts a recipe from vegetarian to non vegetarian by adding a meat sub. if no, do nothing
+    for i, ing in enumerate(ings):
+        tokens = ing['name'].lower().split(' ')
+        for t in tokens:
+            if t in meats or t+'s' in meats or t in seafood or t+'s' in seafood:
+                return ings
+    ings.append(random.choice(meat_subs))
+    return ings
 
 
-trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-pork/'
+trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-dinner/'
+#trial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
+#trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
+#trial = 'https://www.allrecipes.com/recipe/110447/melt-in-your-mouth-broiled-salmon/'
+#trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-pork/'
 #trial = 'https://www.allrecipes.com/recipe/269652/tuscan-pork-tenderloin/'
 #trial = 'https://www.allrecipes.com/recipe/158440/sophies-shepherds-pie/'
 #trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
@@ -128,6 +136,6 @@ trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-p
 #trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
-#print(ingredients_parsed)
-veg = to_vegetarian(ingredients_parsed)
-#print(veg)
+#veg = to_vegetarian(ingredients_parsed)
+non_veg = from_vegetarian(ingredients_parsed)
+print(non_veg)

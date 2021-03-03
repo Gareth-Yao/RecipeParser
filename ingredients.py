@@ -59,12 +59,55 @@ seafood = [
 ]
 
 vegetarian_subs = [
-    'tofu','tempe','Beyond Meat','mushrooms','tempeh','eggplants','seitan', 'cauliflowers',
-    'lentils','black beans','legumes'
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'tofu', 'descriptor': ['firm'], 'preparation': ['drained']
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'Beyond Meat', 'descriptor': [], 'preparation': []
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'mushrooms', 'descriptor': [], 'preparation': []
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'tempeh', 'descriptor': [], 'preparation': []
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'eggplants', 'descriptor': [], 'preparation': []
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'seitan', 'descriptor': [], 'preparation': []
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'cauliflowers', 'descriptor': [], 'preparation': []
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'lentils', 'descriptor': [], 'preparation': []
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'black beans', 'descriptor': [], 'preparation': []
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'legumes', 'descriptor': [], 'preparation': []
+    }
 ]
 
 herbs_spices = [
-    'rosemary','ginger','parsley','cumin','nutmeg','coriander','paprika','chives',
+    'garlic','rosemary','ginger','parsley','cumin','nutmeg','coriander','paprika','chives',
     'oregano','thyme','basil','salt','pepper','dill','cardamom','allspice','cayenne','cayenne pepper','saffron',
     'anise','chervil','celery','sage','tarragon','chicory','lovage','marjoram','vanilla','clove','prosciutto','carrots','carrot'
+]
+
+meat_subs = [
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'beef', 'descriptor': ['ground'], 'preparation': []
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'shrimp', 'descriptor': [], 'preparation': ['deveined','peeled']
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'chicken', 'descriptor': [], 'preparation': []
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'sausage', 'descriptor': [], 'preparation': ['cut']
+    },
 ]
