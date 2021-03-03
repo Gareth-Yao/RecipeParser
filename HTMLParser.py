@@ -44,19 +44,22 @@ def fetchAndParseHTML(url):
 
 def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
     measure_words=['tablespoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb','package','wedge','sheet','cube','stalk','thirds']
-    descriptor_words=['skin','bone','fine','parts','dried','ground']
+    descriptor_words=['optional','skin','bone','fine','parts','dried','ground']
     ingredients = []
     for ing in all_ingredients:
+        measure, descriptors = '', []
+        if '(optional)' in ing.lower():
+            ing = re.sub('\(optional\)','',ing)
+            descriptors.append('optional')
         ing = re.sub('\(.*\)', '', ing)
         descs, ing_info = pos_tag(word_tokenize(ing)), {}
-        #print(descs)
         # quantity
         q = [a[0] for a in descs if a[1] == 'CD']
         q2 = 0 if len(q) == 0 else sum([float(i) for i in q])
         ing_info['quantity'] = q2 if (type(q2) is float and q2.is_integer() == False) else int(q2)
         # measurement
-        measure, descriptors = '', []
         nouns = [a[0] for a in descs if ((a[1]=='NN' or a[1]=='NNS' or a[1]=='NNP') or a[0] in herbs_spices or a[0]=='can' or a[0]=='cans') and a[0] not in descriptor_words]
+        print(descs)
         for n in nouns:
             for m in measure_words:
                 if fuzz.ratio(n, m) > 70 and n != 'inch':
@@ -87,7 +90,7 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
         descriptors.extend(other_descs)
         ing_info['descriptor'] = descriptors
         # preparation
-        prep = [a[0] for a in descs if (a[1]=='VBD' or a[1]=='VB' or a[1]=='VBN' or a[1]=='VBP') and a[0] not in descriptors]
+        prep = [a[0] for a in descs if (a[1]=='VBD' or a[1]=='VB' or a[1]=='VBN' or a[1]=='VBP') and a[0] not in descriptors and a[0] not in nouns]
         for i in range(len(prep)):
             if prep[i] == 'taste':
                 prep[i] = 'to taste'
@@ -116,7 +119,9 @@ def from_vegetarian(ings):
     pass
 
 
-trial = 'https://www.allrecipes.com/recipe/158440/sophies-shepherds-pie/'
+trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-pork/'
+#trial = 'https://www.allrecipes.com/recipe/269652/tuscan-pork-tenderloin/'
+#trial = 'https://www.allrecipes.com/recipe/158440/sophies-shepherds-pie/'
 #trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
 #trial = 'https://www.allrecipes.com/recipe/234799/poor-mans-stroganoff/'
 #trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'

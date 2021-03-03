@@ -62,3 +62,9 @@ vegetarian_subs = [
     'tofu','tempe','Beyond Meat','mushrooms','tempeh','eggplants','seitan', 'cauliflowers',
     'lentils','black beans','legumes'
 ]
+
+herbs_spices = [
+    'rosemary','ginger','parsley','cumin','nutmeg','coriander','paprika','chives',
+    'oregano','thyme','basil','salt','pepper','dill','cardamom','allspice','cayenne','cayenne pepper','saffron',
+    'anise','chervil','celery','sage','tarragon','chicory','lovage','marjoram','vanilla','clove','prosciutto','carrots','carrot'
+]
