@@ -4,7 +4,7 @@ import unicodedata
 from nltk import pos_tag, word_tokenize
 from fuzzywuzzy import fuzz
 import re
-from ingredients import meats, seafood, vegetarian_subs
+from ingredients import meats, seafood, vegetarian_subs, herbs_spices
 import random
 
 def convertUnicode(s):
@@ -43,48 +43,51 @@ def fetchAndParseHTML(url):
 
 
 def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
-    measure_words=['tablespoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb','package','wedge','sheet','cube']
-    descriptor_words=['skin','bone','fine','parts']
+    measure_words=['tablespoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb','package','wedge','sheet','cube','stalk','thirds']
+    descriptor_words=['skin','bone','fine','parts','dried','ground']
     ingredients = []
     for ing in all_ingredients:
         ing = re.sub('\(.*\)', '', ing)
         descs, ing_info = pos_tag(word_tokenize(ing)), {}
+        #print(descs)
         # quantity
         q = [a[0] for a in descs if a[1] == 'CD']
         q2 = 0 if len(q) == 0 else sum([float(i) for i in q])
         ing_info['quantity'] = q2 if (type(q2) is float and q2.is_integer() == False) else int(q2)
         # measurement
         measure, descriptors = '', []
-        nouns = [a[0] for a in descs if (a[1]=='NN' or a[1]=='NNS' or a[1]=='NNP')]
+        nouns = [a[0] for a in descs if ((a[1]=='NN' or a[1]=='NNS' or a[1]=='NNP') or a[0] in herbs_spices or a[0]=='can' or a[0]=='cans') and a[0] not in descriptor_words]
         for n in nouns:
             for m in measure_words:
-                if fuzz.ratio(n, m) > 70:
+                if fuzz.ratio(n, m) > 70 and n != 'inch':
                     measure = n
                     break
             for d in descriptor_words:
                 if fuzz.partial_ratio(n, d) > 90:
                     descriptors.append(n)
+                    break
             if measure!='':
                 break
         # name
-        other_descs = [d[0] for d in descs if (d[1]=='JJ' or d[1]=='RB') and d[0] != measure]
+        other_descs = [d[0] for d in descs if (d[1]=='JJ' or d[1]=='RB' or d[0] in descriptor_words) and d[0] != measure and d[0] not in nouns]
         if measure!='':
             nouns.remove(measure)
             nouns = [n for n in nouns if n not in descriptors]
         else:
             for d in other_descs:
                 for m in measure_words:
-                    if fuzz.ratio(d,m) > 70:
+                    if fuzz.ratio(d,m) > 95:
                         measure = d
                         other_descs.remove(d)
                         break
+        nouns = [n for n in nouns if n!='piece' and n!='pieces' and n!='inch' and n!='inches' and n!='thirds']
         ing_info['measurement'] = measure
         ing_info['name'] = ' '.join(nouns)
         # descriptor
         descriptors.extend(other_descs)
         ing_info['descriptor'] = descriptors
         # preparation
-        prep = [a[0] for a in descs if a[1]=='VBD' or a[1]=='VB' or a[1]=='VBN' or a[1]=='VBP']
+        prep = [a[0] for a in descs if (a[1]=='VBD' or a[1]=='VB' or a[1]=='VBN' or a[1]=='VBP') and a[0] not in descriptors]
         for i in range(len(prep)):
             if prep[i] == 'taste':
                 prep[i] = 'to taste'
@@ -92,7 +95,7 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
                 prep.remove(prep[i])
         ing_info['preparation'] = prep
         ingredients.append(ing_info)
-        #print(ing_info)
+        print(ing_info)
     return ingredients
 
 def to_vegetarian(ings):
@@ -113,12 +116,13 @@ def from_vegetarian(ings):
     pass
 
 
-trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
+trial = 'https://www.allrecipes.com/recipe/158440/sophies-shepherds-pie/'
+#trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
 #trial = 'https://www.allrecipes.com/recipe/234799/poor-mans-stroganoff/'
 #trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
 #trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
-print(ingredients_parsed)
+#print(ingredients_parsed)
 veg = to_vegetarian(ingredients_parsed)
 #print(veg)
