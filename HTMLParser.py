@@ -4,6 +4,8 @@ import unicodedata
 from nltk import pos_tag, word_tokenize
 from fuzzywuzzy import fuzz
 import re
+from ingredients import meats, seafood, vegetarian_subs
+import random
 
 def convertUnicode(s):
     newStr = ""
@@ -41,12 +43,14 @@ def fetchAndParseHTML(url):
 
 
 def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
-    measure_words=['tablespoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb','package','wedge','sheet']
+    measure_words=['tablespoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','stalk','pinch','fluid','drop','gill','can','half','halves','head','oz','liter','gram','lb','package','wedge','sheet','cube']
     descriptor_words=['skin','bone','fine','parts']
     ingredients = []
-    for ing in all_ingredients:
-        ing = re.sub('\(.*\)', '', ing)
-        print(ing)
+    print(all_ingredients)
+    for ingr in all_ingredients:
+        lolz = ingr.split(',')
+        ing = re.sub('\(.*\)', '', lolz[0])
+        prep_tokens = lolz[1:] if len(lolz) > 1 else []
         descs, ing_info = pos_tag(word_tokenize(ing)), {}
         # quantity
         q = [a[0] for a in descs if a[1] == 'CD']
@@ -83,18 +87,45 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
         descriptors.extend(other_descs)
         ing_info['descriptor'] = descriptors
         # preparation
-        prep = [a[0] for a in descs if a[1]=='VBD' or a[1]=='VB' or a[1]=='VBN' or a[1]=='VBP']
-        for i in range(len(prep)):
-            if prep[i] == 'taste':
-                prep[i] = 'to taste'
-            elif prep[i] == 'needed':
-                prep.remove(prep[i])
+        prep = []
+        for p in prep_tokens:
+            p = p.strip().split(' and ')
+            prep.extend(p)
+        for a in descs:
+            if a[1]=='VBD' or a[1]=='VB' or a[1]=='VBN' or a[1]=='VBP':
+                if a[0] == 'taste':
+                    prep.append('to taste')
+                elif a[0] != 'needed':
+                    prep.append(a[0])
         ing_info['preparation'] = prep
-        print(ing_info)
-        print()
         ingredients.append(ing_info)
+        print(ing_info)
+    return ingredients
 
-#trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
-trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
+def to_vegetarian(ings):
+    # converts any recipe w/ meat to vegetarian by substituting the meat ingredeints with vegetarian ones
+    replaced = vegetarian_subs
+    for i, ing in enumerate(ings):
+        tokens = ing['name'].lower().split(' ')
+        for t in tokens:
+            if t in meats or t+'s' in meats or t in seafood or t+'s' in seafood:
+                ran = random.choice(replaced)
+                ing['name'] = ran 
+                replaced.remove(ran)
+                break
+    return ings
+
+def from_vegetarian(ings):
+    # converts a recipe from vegetarian to non vegetarian by replacing with meat ingredients 
+    pass
+
+
+#trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
+#trial = 'https://www.allrecipes.com/recipe/234799/poor-mans-stroganoff/'
+trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
+#trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
+#print(ingredients_parsed)
+veg = to_vegetarian(ingredients_parsed)
+#print(veg)
