@@ -97,6 +97,7 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
                 prep.remove(prep[i])
         ing_info['preparation'] = prep
         ingredients.append(ing_info)
+        print(ing_info)
     return ingredients
 
 def to_vegetarian(ings):
@@ -107,6 +108,7 @@ def to_vegetarian(ings):
         for t in tokens:
             if t in meats or t+'s' in meats or t in seafood or t+'s' in seafood:
                 ran = random.choice(replaced)
+                ran['measurement'], ran['quantity'] = ing['measurement'], ing['quantity']
                 ings[i] = ran
                 replaced.remove(ran)
                 break
@@ -123,7 +125,11 @@ def from_vegetarian(ings):
     return ings
 
 
-trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-dinner/'
+
+trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
+#trial = 'https://www.allrecipes.com/recipe/47247/chili-rellenos-casserole/'
+#trial = 'https://www.allrecipes.com/recipe/218901/beef-enchiladas-with-spicy-red-sauce/'
+#trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-dinner/'
 #trial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
 #trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
 #trial = 'https://www.allrecipes.com/recipe/110447/melt-in-your-mouth-broiled-salmon/'
@@ -136,6 +142,6 @@ trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-di
 #trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
-#veg = to_vegetarian(ingredients_parsed)
-non_veg = from_vegetarian(ingredients_parsed)
-print(non_veg)
+veg = to_vegetarian(ingredients_parsed)
+#non_veg = from_vegetarian(ingredients_parsed)
+print(veg)

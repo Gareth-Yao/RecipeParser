@@ -92,9 +92,9 @@ vegetarian_subs = [
 ]
 
 herbs_spices = [
-    'garlic','rosemary','ginger','parsley','cumin','nutmeg','coriander','paprika','chives',
+    'cheese', 'gravy','sauce','tomato','chili','garlic','rosemary','ginger','parsley','cumin','nutmeg','coriander','paprika','chives',
     'oregano','thyme','basil','salt','pepper','dill','cardamom','allspice','cayenne','cayenne pepper','saffron',
-    'anise','chervil','celery','sage','tarragon','chicory','lovage','marjoram','vanilla','clove','prosciutto','carrots','carrot'
+    'anise','chervil','celery','sage','tarragon','chicory','lovage','marjoram','vanilla','clove','prosciutto','carrots','carrot','sour cream'
 ]
 
 meat_subs = [
@@ -109,5 +109,11 @@ meat_subs = [
     },
     {
         'quantity':8, 'measurement':'ounces', 'name': 'sausage', 'descriptor': [], 'preparation': ['cut']
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'lamb', 'descriptor': [], 'preparation': []
+    },
+    {
+        'quantity':8, 'measurement':'ounces', 'name': 'tuna', 'descriptor': [], 'preparation': ['shredded']
     },
 ]
