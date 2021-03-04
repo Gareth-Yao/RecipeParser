@@ -4,7 +4,7 @@ import unicodedata
 from nltk import pos_tag, word_tokenize
 from fuzzywuzzy import fuzz
 import re
-from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs, herbs, spices, veggies, l_f, grains, l_m, h_subs, u_subs
+from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs, herbs, spices, veggies, l_f, grains, l_m, h_subs, u_subs, italian_herbs, other_herbs, italian_proteins, other_proteins, italian_pasta, other_noodles, other_oils, other_vinegars
 import random
 import copy
 
@@ -436,6 +436,56 @@ def to_unhealthy(ings, steps):
         s['ingredients'] = [u_subs[i][0] if i in u_subs else i for i in s['ingredients']]
     return u_ing, u_stp
 
+def transform_italian(ings, steps):
+    #curr_i = [i['name'] for i in ings]
+    i_ing = copy.deepcopy(ings)
+    i_stp = copy.deepcopy(steps)
+    h_switch = italian_herbs
+    m_switch = italian_proteins
+    p_switch = italian_pasta
+    switch_dict = {}
+    for i in [i2['name'] for i2 in ings]:
+        if i in h_switch:
+            h_switch.remove(i)
+        if i in m_switch:
+            m_switch.remove(i)
+        if i in p_switch:
+            p_switch.remove(i)
+    for ing in i_ing:
+        if ing['name'] in other_herbs:
+            if len(h_switch) > 0:
+                s = random.choice(h_switch)
+                switch_dict[ing['name']] = s
+                ing['name'] = s
+                h_switch.remove(s)
+            else:
+                continue
+        if ing['name'] in other_proteins:
+            if len(m_switch) > 0:
+                s = random.choice(m_switch)
+                switch_dict[ing['name']] = s
+                ing['name'] = s
+                m_switch.remove(s)
+            else:
+                continue
+        if ing['name'] in other_noodles:
+            if len(p_switch) > 0:
+                s = random.choice(p_switch)
+                switch_dict[ing['name']] = s
+                ing['name'] = s
+                p_switch.remove(s)
+            else:
+                continue
+        if ing['name'] in other_oils:
+            switch_dict[ing['name']] = 'olive oil'
+            ing['name'] = 'olive oil'
+        if ing['name'] in other_vinegars:
+            switch_dict[ing['name']] = 'balsamic vinegar'
+            ing['name'] = 'balsamic vinegar'
+    for st in i_stp:
+        st['ingredients'] = [switch_dict[i] if i in switch_dict else i for i in st['ingredients']]
+    return i_ing, i_stp
+
 
 trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/47247/chili-rellenos-casserole/'
@@ -459,6 +509,7 @@ ingredients_parsed = get_ingredients(result["ingredients"])
 s_tools, s_primary_methods, s_secondary_methods, split_steps = parseSteps(result['instructions'], [i['name'] for i in ingredients_parsed])
 h_ing, h_st = to_healthy(ingredients_parsed, split_steps)
 u_ing, u_st = to_unhealthy(ingredients_parsed, split_steps)
+i_ing, i_st = transform_italian(ingredients_parsed, split_steps)
 veg = to_vegetarian(ingredients_parsed)
 #non_veg = from_vegetarian(ingredients_parsed)
 print(veg)

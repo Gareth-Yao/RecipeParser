@@ -136,3 +136,28 @@ meat_subs = [
         'quantity':8, 'measurement':'ounces', 'name': 'tuna', 'descriptor': [], 'preparation': ['shredded']
     },
 ]
+
+italian_herbs = ["oregano", "basil", "sage", "rosemary", "parsley", "thyme", "pepper flakes"]
+other_herbs = ["borage", "bay laurel", "caraway", "catnip", "chevril", "chives", "cilantro", "dill",
+               "epazote", "fennel", "lavendar", "lemon grass", "lemon balm", "lemon verbena", "lovage",
+               "mint", "nasturtium", "sorrel", "taragon", "cumin", "corriander", "cinnamon", "ginger",
+               "nutmeg"]
+
+#italian_shellfish_s = ["mussel"]
+#italian_shellfish_p = ["mussels"]
+#other_shellfish_s = ["clam", "oyster"]
+#other_shellfish_p = ["clams", "oysters"]
+
+italian_proteins = ["veal", "sauage"] # panchetta, prosciutto
+other_proteins = ["beef", "chicken", "turkey", "pork", "ham", "lamb", "goat"]
+
+italian_pasta = ["spaghetti", "linguine", "fettuccini", "macaroni", "rigatoni",
+                 "penne", "fusilli", "farfalle"]
+other_noodles = ["egg noodles", "rice noodles", "ramen noodles", "ramen", "oil noodles",
+                 "yi mein", "saang mein", "cellophane noodles", "lai fun", "rice vermicelli",
+                 "wonton noodles", "udon noodles", "udon", "soba", "somen", "wanko soba", "yakisoba",
+                 "bakmi", "sevai", "paomo"]
+
+other_oils = ["canola oil", "vegetable oil", "peanut oil", "sesame oil", "chili oil", "butter",
+              "margarine", "lard", "palm oil", "corn oil", "coconut oil", "grapeseed oil", "avocado oil"]
+other_vinegars = ["wine vinegar", "apple cider vinegar", "rice vinegar", "vinegar", "malt vinegar", "white wine vinegar", "red wine vinegar"]
