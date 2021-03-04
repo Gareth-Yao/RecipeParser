@@ -4,8 +4,23 @@ import unicodedata
 from nltk import pos_tag, word_tokenize
 from fuzzywuzzy import fuzz
 import re
-from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs
+from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs, herbs, spices, veggies, l_f, grains, l_m, h_subs, u_subs
 import random
+import copy
+
+kitchen_tools = ["oven", "stove", "burner", "grill", "toaster", "pan", "non-stick pan", "pot", "dutch oven",
+                 "knife", "chef's knife", "paring knife", "garlic press", "spoon", "bowl", "whisk", "grater",
+                 "microwave", "skillet", "saucepan", "baking tray", "baking dish", "baking pan", "cake pan",
+                 "baking sheet", "cookie sheet", "mixer", "strainer", "colander", "sifter", "blender", "food processor",
+                 "foil", "alunimum foil", "parchment paper", "wax paper", "slow cooker", "rice cooker", "sous vide", "crock pot",
+                 "zester", "juicer", "casserole dish", "dish"]
+                
+primary_methods = ["bake", "broil", "boil", "sautee", "poach", "fry", "stir fry", "brown", "heat", "grill", "simmer", "reduce",
+                   "slow cook", "cook", "sous vide", "sear", "toast", "microwave", "warm"]
+
+secondary_methods = ["chop", "slice", "dice", "mince", "grate", "zest", "mix", "stir", "combine", "fold", "pour", "whisk", "beat",
+                     "juice", "squeeze", "strain", "sift", "drain", "add", "blend", "scoop", "top", "spoon", "cover", "uncover",
+                     "discard", "reserve", "preheat", "melt"]
 
 def convertUnicode(s):
     newStr = ""
@@ -44,7 +59,7 @@ def fetchAndParseHTML(url):
 
 def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
     measure_words=['tablespoon','teaspoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','clove','fillet','filet','bottle','liter','gram','lb','package','wedge','sheet','cube','stalk','thirds']
-    descriptor_words=['optional','skin','bone','fine','parts','dried','ground']
+    descriptor_words=['optional','skin','bone','fine','parts','dried','ground', 'fresh', 'organic']
     ingredients = []
     for ing in all_ingredients:
         measure, descriptors = '', []
@@ -100,6 +115,179 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
         print(ing_info)
     return ingredients
 
+def parseSteps(steps, ingredients):
+    # Do we want the list of ingredients for each step to be just
+    # ingredient names or the actual dict?
+    #TODO
+    step_tools = []
+    step_p_methods = []
+    step_s_methods = []
+    split_steps = []
+
+    for s in steps:
+        step = word_tokenize(s)
+        split_step = {'ingredients':[], 'tools':[], 'primary methods':[], 'secondary methods':[], 'times':[]}
+        for i, w in enumerate(step):
+            if i < len(step) - 1:
+                bigram = w + " " + step[i+1]
+                if bigram in kitchen_tools:
+                    if bigram not in step_tools:
+                        step_tools.append(bigram)
+                    if bigram not in split_step['tools']:
+                        split_step['tools'].append(bigram)
+                if bigram in primary_methods:
+                    if bigram not in step_p_methods:
+                        step_p_methods.append(bigram)
+                    if bigram not in split_step['primary methods']:
+                        split_step['primary methods'].append(bigram)
+                if bigram in secondary_methods:
+                    if bigram not in step_s_methods:
+                        step_s_methods.append(bigram)
+                    if bigram not in split_step['secondary methods']:
+                        split_step['secondary methods'].append(bigram)
+                # if ingredients is just list of names
+                if bigram in ingredients:
+                    if bigram not in split_step['ingredients']:
+                        split_step['ingredients'].append(bigram)
+                # if ingredients should be dict
+                """
+                ing = next((i for i in ingredients if i["name"] == bigram), False) # append ingredients[bigram]
+                if ing:
+                    if ing["name"] not in [n['name'] for n in split_step['ingredients']]:
+                        split_step['ingredients'].append(ing)
+                """
+
+            if w in kitchen_tools:
+                skip = False
+                try:
+                    if step[i-1] + " " + w in kitchen_tools:
+                        skip = True
+                        if step[i-1] + " " + w not in step_tools:
+                            step_tools.append(step[i-1] + " " + w)
+                        if step[i-1] + " " + w not in split_step['tools']:
+                            split_step['tools'].append(step[i-1] + " " + w)
+                except Exception:
+                    pass
+                try:
+                    if w + " " + step[i+1] in kitchen_tools:
+                        skip = True
+                        if w + " " + step[i+1] not in step_tools:
+                            step_tools.append(w + " " + step[i+1])
+                        if w + " " + step[i+1] not in split_step['tools']:
+                            split_step['tools'].append(w + " " + step[i+1])
+                except Exception:
+                    pass
+                if not skip:
+                    if w not in step_tools:
+                        step_tools.append(w)
+                    if w not in split_step['tools']:
+                        split_step['tools'].append(w)
+
+            if w in primary_methods:
+                skip = False
+                try:
+                    if step[i-1] + " " + w in primary_methods:
+                        skip = True
+                        if step[i-1] + " " + w not in step_p_methods:
+                            step_p_methods.append(step[i-1] + " " + w)
+                        if step[i-1] + " " + w not in split_step['primary methods']:
+                            split_step['primary methods'].append(step[i-1] + " " + w)
+                except Exception:
+                    pass
+                try:
+                    if w + " " + step[i+1] in primary_methods:
+                        skip = True
+                        if w + " " + step[i+1] not in step_p_methods:
+                            step_p_methods.append(w + " " + step[i+1])
+                        if w + " " + step[i+1] not in split_step['primary methods']:
+                            split_step['primary methods'].append(w + " " + step[i+1])
+                except Exception:
+                    pass
+                if not skip:
+                    if w not in step_p_methods:
+                        step_p_methods.append(w)
+                    if w not in split_step['primary methods']:
+                        split_step['primary methods'].append(w)
+
+            if w in secondary_methods:
+                skip = False
+                try:
+                    if step[i-1] + " " + w in secondary_methods:
+                        skip = True
+                        if step[i-1] + " " + w not in step_s_methods:
+                            step_s_methods.append(step[i-1] + " " + w)
+                        if step[i-1] + " " + w not in split_step['secondary methods']:
+                            split_step['secondary methods'].append(step[i-1] + " " + w)
+                except Exception:
+                    pass
+                try:
+                    if w + " " + step[i+1] in secondary_methods:
+                        skip = True
+                        if w + " " + step[i+1] not in step_s_methods:
+                            step_s_methods.append(w + " " + step[i+1])
+                        if w + " " + step[i+1] not in split_step['secondary methods']:
+                            split_step['secondary methods'].append(w + " " + step[i+1])
+                except Exception:
+                    pass
+                if not skip:
+                    if w not in step_s_methods:
+                        step_s_methods.append(w)
+                    if w not in split_step['secondary methods']:
+                        split_step['secondary methods'].append(w)
+
+            # if ingredients is dict
+            """
+            ing = next((i for i in ingredients if i["name"] == w), False)
+            if ing:
+                skip = False
+                ing2 = next((i2 for i2 in ingredients if i2["name"] == step[i-1] + " " + w), False)
+                if ing2:
+                    if ing2["name"] not in [n['name'] for n in split_step['ingredients']]:
+                        split_step['ingredeints'].append(ing2)
+                        skip = True
+                ing2 = next((i2 for i2 in ingredients if i2 == w + " " + step[i+1]), False)
+                if ing2:
+                    if ing2["name"] not in [n['name'] for n in split_step['ingredients']]:
+                        split_step['ingredeints'].append(ing2)
+                        skip = True
+                if not skip:
+                    if ing["name"] not in [n['name'] for n in split_step['ingredients']]:
+                        split_step['ingredients'].append(ing)
+            """
+            # if ingredients is just a list
+            if w in ingredients:
+                skip = False
+                try:
+                    if step[i-1] + " " + w in ingredients:
+                        skip = True
+                        if step[i-1] + " " + w not in split_step['ingredients']:
+                            split_step['ingredients'].append(step[i-1] + " " + w)
+                except Exception:
+                    pass
+                try:
+                    if w + " " + step[i+1] in ingredients:
+                        skip = True
+                        if w + " " + step[i+1] not in split_step['ingredients']:
+                            split_step['ingredients'].append(w + " " + step[i+1])
+                except Exception:
+                    pass
+                if not skip:
+                    if w not in split_step['ingredients']:
+                        split_step['ingredients'].append(w)
+
+            if w == 'hour' or w == 'hours':
+                split_step['times'].append(step[i-1] + " " + w)
+
+            if w == 'minute' or w == 'minutes':
+                split_step['times'].append(step[i-1] + " " + w)
+
+            if w == 'second' or w == 'seconds':
+                split_step['times'].append(step[i-1] + " " + w)
+
+        split_steps.append(split_step)
+
+    return step_tools, step_p_methods, step_s_methods, split_steps
+
 def to_vegetarian(ings):
     # converts any recipe w/ meat to vegetarian by substituting the meat ingredeints with vegetarian ones
     replaced = vegetarian_subs
@@ -124,6 +312,129 @@ def from_vegetarian(ings):
     ings.append(random.choice(meat_subs))
     return ings
 
+def to_healthy(ings, steps):
+    h_ing = copy.deepcopy(ings)
+    for i in h_ing:
+        #i2 = copy.deepcopy(i)
+        if i['name'] in herbs:
+            try:
+                i['descriptor'].remove('dried')
+            except Exception:
+                pass
+            if 'fresh' not in i['descriptor']:
+                i['descriptor'].insert(0, 'fresh')
+        if i['name'] in spices:
+            if 'ground' not in i['descriptor']:
+                i['descriptor'].insert(0, 'ground')
+            if 'fresh' not in i['descriptor']:
+                i['descriptor'].insert(0, 'fresh')
+        if i['name'] in veggies:
+            if 'organic' not in i['descriptor']:
+                i['descriptor'].insert(0, 'organic')
+        if i['name'] in l_f:
+            try:
+                i['descriptor'].remove('full-fat')
+            except Exception:
+                pass
+            if 'low-fat' not in i['descriptor']:
+                i['descriptor'].insert(0, 'low-fat')
+        if i['name'] == 'rice':
+            try:
+                i['descriptor'].remove('white')
+            except Exception:
+                pass
+            if 'brown' not in i['descriptor']:
+                i['descriptor'].append('brown')
+        if i['name'] in grains:
+            try:
+                i['descriptor'].remove('white')
+            except Exception:
+                pass
+            if 'grain' not in i['descriptor']:
+                i['descriptor'].insert(0, 'grain')
+            if 'whole' not in i['descriptor']:
+                i['descriptor'].insert(0, 'whole')
+        if i['name'] in l_m:
+            try:
+                i['descriptor'].remove('fatty')
+            except Exception:
+                pass
+            if 'lean' not in i['descriptor']:
+                i['descriptor'].insert(0, 'lean')
+        if i['name'] in list(h_subs.keys()):
+            i['descriptor'] = h_subs[i['name']][1]
+            i['name'] = h_subs[i['name']][0]
+    h_stp = copy.deepcopy(steps)
+    for s in h_stp:
+        # dict
+        """
+        for i in s['ingredients']:
+            if i['name'] in list(h_subs.keys()):
+                i['name'] = h_subs[i['name']][0]
+                i['descriptor'] = []
+        """
+        # list
+        s['ingredients'] = [h_subs[i][0] if i in h_subs else i for i in s['ingredients']]
+    return h_ing, h_stp
+
+def to_unhealthy(ings, steps):
+    u_ing = copy.deepcopy(ings)
+    for i in u_ing:
+        #i2 = copy.deepcopy(i)
+        if i['name'] in herbs:
+            try:
+                i['descriptor'].remove('fresh')
+            except Exception:
+                pass
+            if 'dried' not in i['descriptor']:
+                i['descriptor'].insert(0, 'dried')
+        if i['name'] in spices:
+            try:
+                i['descriptor'].remove('fresh')
+                i['descriptor'].remove('ground')
+            except Exception:
+                pass
+        if i['name'] in veggies:
+            try:
+                i['descriptor'].remove('organic')
+            except Exception:
+                pass
+        if i['name'] in l_f:
+            try:
+                i['descriptor'].remove('low-fat')
+            except Exception:
+                pass
+            if 'full-fat' not in i['descriptor']:
+                i['descriptor'].insert(0, 'full-fat')
+        if i['name'] == 'rice':
+            try:
+                i['descriptor'].remove('brown')
+            except Exception:
+                pass
+            if 'white' not in i['descriptor']:
+                i['descriptor'].append('white')
+        if i['name'] in grains:
+            try:
+                i['descriptor'].remove('whole')
+                i['descriptor'].remove('grain')
+            except Exception:
+                pass
+            if 'white' not in i['descriptor']:
+                i['descriptor'].insert(0, 'white')
+        if i['name'] in l_m:
+            try:
+                i['descriptor'].remove('lean')
+            except Exception:
+                pass
+            if 'fatty' not in i['descriptor']:
+                i['descriptor'].insert(0, 'fatty')
+        if i['name'] in list(u_subs.keys()):
+            i['descriptor'] = u_subs[i['name']][1]
+            i['name'] = u_subs[i['name']][0]
+    u_stp = copy.deepcopy(steps)
+    for s in u_stp:
+        s['ingredients'] = [u_subs[i][0] if i in u_subs else i for i in s['ingredients']]
+    return u_ing, u_stp
 
 
 trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
@@ -142,6 +453,12 @@ trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole
 #trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
+# make ingredients in each step a dict
+#s_tools, s_primary_methods, s_secondary_methods, split_steps = parseSteps(result['instructions'], ingredients_parsed)
+# make ingredients in each step a list
+s_tools, s_primary_methods, s_secondary_methods, split_steps = parseSteps(result['instructions'], [i['name'] for i in ingredients_parsed])
+h_ing, h_st = to_healthy(ingredients_parsed, split_steps)
+u_ing, u_st = to_unhealthy(ingredients_parsed, split_steps)
 veg = to_vegetarian(ingredients_parsed)
 #non_veg = from_vegetarian(ingredients_parsed)
 print(veg)

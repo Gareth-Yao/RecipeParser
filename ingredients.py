@@ -58,6 +58,12 @@ seafood = [
     'squid','conch','snail','nautilus','sea cucumber','sea urchin','urchin','jellyfishh','sea fig'
 ]
 
+herbs = ['basil', 'cilantro', 'parsley', 'rosemary', 'thyme', 'dill', 'oregano']
+
+spices = ['black pepper', 'nutmeg', 'ginger']
+
+veggies = ['onion', 'bell pepper', 'potato', 'sweet potato', 'broccoli']
+
 vegetarian_subs = [
     {
         'quantity':8, 'measurement':'ounces', 'name': 'tofu', 'descriptor': ['firm'], 'preparation': ['drained']
@@ -96,6 +102,19 @@ herbs_spices = [
     'oregano','thyme','basil','salt','pepper','dill','cardamom','allspice','cayenne','cayenne pepper','saffron',
     'anise','chervil','celery','sage','tarragon','chicory','lovage','marjoram','vanilla','clove','prosciutto','carrots','carrot','sour cream'
 ]
+
+l_f = ['cheese', 'yogurt', 'mayonnaise', 'mayo', 'cream cheese', 'sour cream', 'cottage cheese', 'ricotta', 'mozzarella', 'feta']
+
+grains = ['bread', 'flour', 'breadcrumbs']
+
+l_m = ['beef', 'turkey', 'chicken', 'pork']
+
+h_subs = {'butter' : ['vegetable oil', []], 'sugar' : ['honey', []], 'milk' : ['milk', ['skim']], 'cream' : ['milk', ['skim']]}
+
+u_subs = {'vegetable oil' : ['butter', ['full-fat']], 'honey' : ['corn syrup', ['high-fructose']],
+          'canola oil' : ['butter', ['full-fat']], 'olive oil' : ['butter', ['full-fat']],
+          'margerine' : ['butter', ['full-fat']], 'sugar' : ['corn syrup', ['high-fructose']],
+          'sweetener' : ['corn syrup', ['high-fructose']], 'milk' : ['milk', ['whole']]}
 
 meat_subs = [
     {
