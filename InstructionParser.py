@@ -2,6 +2,7 @@ from textblob import TextBlob
 import textblob.download_corpora as download_corpora
 import HTMLParser
 import spacy
+from fractions import Fraction
 from fuzzywuzzy import fuzz
 download_corpora.main()
 nlp = spacy.load("en_core_web_sm")
@@ -9,7 +10,10 @@ target_preps = ["in","with","on","of"]
 non_tool = ["top","meat","side","sides",'heat']
 cooking_methods = ["bake","fry","roast","grill","steam","poach","simmer","broil","blanch","braise","stew"]
 secondary_cooking_methods = ["cook","stir"]
-def parseToolsAndCookingMethod(url):
+
+
+def parseToolsAndCookingMethod(url, replaceEmptyMainMethod = True):
+    x = fuzz.token_set_ratio("place chicken cutlets", "chicken breasts")
     results = HTMLParser.fetchAndParseHTML(url)
     instructions = results["instructions"]
     ingredients_parsed = HTMLParser.get_ingredients(results["ingredients"])
@@ -29,7 +33,7 @@ def parseToolsAndCookingMethod(url):
             step['action'] = ''
             step['instruction'] = s.text
             step['tools'] = []
-            step['ingredients'] = []
+            step['ingredients'] = {}
             for token in s:
                 if token.pos_ == "NOUN":
                     full_tool = ""
@@ -39,8 +43,12 @@ def parseToolsAndCookingMethod(url):
                     full_tool += token.text_with_ws
                     full_tool = full_tool[:-1] if len(full_tool) != 0 and not full_tool[-1].isalnum() else full_tool
                     for ing in ingredients:
-                        if len(set(ing.split()).intersection(full_tool.split())) > 0 and ing not in step['ingredients']:
-                            step['ingredients'].append(full_tool)
+                        if ing in s.text:
+                            step['ingredients'].update({ing: ing})
+                            break
+                        #len(set(ing.split()).intersection(full_tool.split())) > 0 and not (any(fuzz.token_sort_ratio(i,full_tool) > 80 for i in step['ingredients'].keys())) and ing not in step['ingredients'].values()
+                        elif fuzz.token_set_ratio(ing, full_tool) > 80:
+                            step['ingredients'].update({full_tool : ing})
                             break
 
                 if (token.dep_ == "ROOT" or token.dep_ == "nsubj" or token.dep_ == 'dep' or token.left_edge == token) and token.lemma_ in cooking_methods:
@@ -64,11 +72,11 @@ def parseToolsAndCookingMethod(url):
                     step['tools'].append(full_tool)
                 elif token.pos_ == "NUM" and token.ent_type_ == "TIME":
                     if "second" in token.head.text:
-                        time += int(token.text) / 60
+                        time +=  Fraction(token.text) / 60
                     elif "minute" in token.head.text:
-                        time += int(token.text)
+                        time +=  Fraction(token.text)
                     else:
-                        time += int(token.text) * 60
+                        time += Fraction(token.text) * 60
 
 
             if len(method) != 0:
@@ -82,13 +90,19 @@ def parseToolsAndCookingMethod(url):
 
             steps.append(step)
     secondary_cooking_method = max(secondary_verbs.items(), key=lambda key : key[1])[0] if len(secondary_verbs.keys()) != 0 else ''
-    main_cooking_method = max(verbs.items(), key=lambda key: key[1])[0] if len(verbs.keys()) != 0 else secondary_cooking_method
+    if replaceEmptyMainMethod:
+        main_cooking_method = max(verbs.items(), key=lambda key: key[1])[0] if len(verbs.keys()) != 0 else secondary_cooking_method
+    else:
+        main_cooking_method = max(verbs.items(), key=lambda key: key[1])[0] if len(verbs.keys()) != 0 else ''
     ans = {'main_cooking_method' : main_cooking_method,
            'secondary_cooking_method' : secondary_cooking_method,
+           'ingredients' : ingredients_parsed,
            'tools' : tools,
            'steps' : steps}
     print(ans)
     return ans
 
 
-print(parseToolsAndCookingMethod("https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"))
+
+
+# steps = parseToolsAndCookingMethod("https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/")
