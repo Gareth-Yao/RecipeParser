@@ -97,6 +97,7 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
                 prep.remove(prep[i])
         ing_info['preparation'] = prep
         ingredients.append(ing_info)
+
     return ingredients
 
 def to_vegetarian(ings):
@@ -125,7 +126,12 @@ def from_vegetarian(ings):
 
 
 
+
+
+trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
+
 #trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
+
 #trial = 'https://www.allrecipes.com/recipe/47247/chili-rellenos-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/218901/beef-enchiladas-with-spicy-red-sauce/'
 #trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-dinner/'
@@ -138,9 +144,24 @@ def from_vegetarian(ings):
 #trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
 #trial = 'https://www.allrecipes.com/recipe/234799/poor-mans-stroganoff/'
 #trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
+
+
+# trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
+# result = fetchAndParseHTML(trial)
+# ingredients_parsed = get_ingredients(result["ingredients"])
+
+#trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
+result = fetchAndParseHTML(trial)
+ingredients_parsed = get_ingredients(result["ingredients"])
+veg = to_vegetarian(ingredients_parsed)
+#non_veg = from_vegetarian(ingredients_parsed)
+print(veg)
+
+
 trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
 veg = to_vegetarian(ingredients_parsed)
 #non_veg = to_vegetarian(ingredients_parsed)
 print(veg)
+
