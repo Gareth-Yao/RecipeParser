@@ -64,12 +64,18 @@ def get_ingredients(all_ingredients):
                 break
         # for token in doc:
         #     print(token, token.pos_)
-        ing_info['measurement'] = m
-        ing_info['name'] = ' '.join([n for n in nouns if n != ing_info['measurement']])
+        for noun in nouns:
+            for d in descriptor_words:
+                if fuzz.ratio(noun, d) > 80:
+                    descriptors.append(noun)
+        ing_info['measurement'] = m 
+        ing_info['name'] = ' '.join([n for n in nouns if n != m and n not in descriptors])
         ing_info['descriptor'] = [token.text for token in doc if token.pos_ == 'ADJ']
         ing_info['descriptor'] += descriptors 
         ing_info['preparation'] = [token.text for token in doc if token.pos_ == 'VERB' or token.pos_ == 'ADV'] 
+        ingredients.append(ing_info)
         print(ing_info)
+    return ingredients
 '''
 def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
     measure_words=['tablespoon','teaspoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','clove','fillet','filet','bottle','liter','gram','lb','package','wedge','sheet','cube','stalk','thirds']
@@ -162,20 +168,15 @@ def from_vegetarian(ings):
 #trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-dinner/'
 #trial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
 #trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
-trial = 'https://www.allrecipes.com/recipe/110447/melt-in-your-mouth-broiled-salmon/'
+#trial = 'https://www.allrecipes.com/recipe/110447/melt-in-your-mouth-broiled-salmon/'
 #trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-pork/'
 #trial = 'https://www.allrecipes.com/recipe/269652/tuscan-pork-tenderloin/'
 #trial = 'https://www.allrecipes.com/recipe/158440/sophies-shepherds-pie/'
 #trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
 #trial = 'https://www.allrecipes.com/recipe/234799/poor-mans-stroganoff/'
 #trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
+trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 
-
-# trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
-# result = fetchAndParseHTML(trial)
-# ingredients_parsed = get_ingredients(result["ingredients"])
-
-#trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
 #veg = to_vegetarian(ingredients_parsed)
