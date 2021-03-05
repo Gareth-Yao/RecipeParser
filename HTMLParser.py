@@ -4,7 +4,7 @@ import unicodedata
 from nltk import pos_tag, word_tokenize
 from fuzzywuzzy import fuzz
 import re
-from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs, measure_words, descriptor_words
+from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs, prep_words, measure_words, descriptor_words, extra
 import random
 import spacy
 from spacy.tokenizer import Tokenizer
@@ -59,10 +59,10 @@ def get_ingredients(all_ingredients):
     for ing in all_ingredients:
         descriptors, ing_info = [], {}
         if '(optional)' in ing.lower():
-            ing = re.sub('\(optional\)\040','',ing)
+            ing = re.sub('\(optional\)','',ing)
             descriptors.append('optional')
-        ing = re.sub('\040\(.*\)', '', ing)
-        ing = re.sub('\(.*\)\040', '', ing)
+        ing = re.sub('\([^()]*\)','',ing)
+        ing = re.sub('  ',' ',ing)
         ing = re.sub('inch pieces', '', ing)
         doc, q = nlp(ing), 0
         for i, token in enumerate(doc):
@@ -70,13 +70,13 @@ def get_ingredients(all_ingredients):
                 break
             elif token.pos_=='NUM' and (i == 0 or i == 1):
                 q += float(token.text)
-        nouns, m = [token.text for token in doc if token.pos_ == 'NOUN' or token.pos_ == 'PROPN' or token.text == 'seasoning'], ''
+        nouns, m = [token.text for token in doc if token.pos_ == 'NOUN' or token.pos_ == 'PROPN' or token.text in extra], ''
         ing_info['quantity'] = q if type(q) is float and q.is_integer() == False else int(q)
         print(ing)
         for i, token in enumerate(doc):
             if q==0:
                 break
-            elif token.text in measure_words or token.text+'s' in measure_words or token.text[:-1] in measure_words and token.text!='cubed':
+            elif token.text in measure_words or token.text+'s' in measure_words or token.text[:-1] in measure_words and token.text!='cubed' and token.text!='sliced':
                 m = token.text
                 break
         # for token in doc:
@@ -86,7 +86,9 @@ def get_ingredients(all_ingredients):
                 if fuzz.ratio(noun, d) > 90:
                     descriptors.append(noun)
         name = ' '.join([n for n in nouns if n != m and n not in descriptors])
-        prep = [token.text for token in doc if token.text not in measure_words and token.text not in descriptor_words and token.text!=m and (token.pos_ == 'VERB' or token.pos_ == 'ADV') and token.text!='needed' and token.text!='more'] 
+        prep = [token.text for token in doc if (token.text in prep_words) or \
+            (token.text not in nouns and token.text not in measure_words and token.text not in descriptor_words and token.text!=m and (token.pos_ == 'VERB' or token.pos_ == 'ADV') and token.text!='needed' and token.text!='more')] 
+        descriptors += [token.text for token in doc if (token.text in descriptor_words and token.text not in descriptors) or token.pos_ == 'ADJ' and token.text != m and token.text not in prep and token.text not in nouns]
         for i, p in enumerate(prep):
             if p == 'taste':
                 prep[i] = 'to taste'
@@ -95,6 +97,11 @@ def get_ingredients(all_ingredients):
             elif p =='sour' and 'cream' in name:
                 name = p+' '+name
                 prep.remove(p)
+        for i, d in enumerate(descriptors):
+            if d == 'sour' and 'cream' in name:
+                name = d+' '+name
+                descriptors.remove(d)
+                break 
         for i, t in enumerate(doc):
             if t.text in prep and i > 0 and doc[i-1].text=='for':
                 descriptors.append('for'+' '+t.text)
@@ -105,8 +112,7 @@ def get_ingredients(all_ingredients):
             new_name, name = ' '.join(temp), 'pepper'
             ingredients.append({'quantity': 0, 'measurement': '', 'name': new_name, 'descriptor': [], 'preparation': ['to taste']})
         ing_info['name'] = name
-        ing_info['descriptor'] = [token.text for token in doc if token.pos_ == 'ADJ' and token.text != m]
-        ing_info['descriptor'] += descriptors
+        ing_info['descriptor'] = descriptors
         ing_info['preparation'] = prep
         ing_info['measurement'] = m if m not in prep and m not in ing_info['descriptor'] else ''
         ingredients.append(ing_info)
@@ -138,13 +144,18 @@ def from_vegetarian(ings):
     ings.append(random.choice(meat_subs))
     return ings
 
-
-trial = 'https://www.allrecipes.com/recipe/223042/chicken-parmesan/'
+trial = 'https://www.allrecipes.com/recipe/270712/air-fryer-coconut-shrimp/'
+#trial = 'https://www.allrecipes.com/recipe/221351/german-hamburgers-frikadellen/'
+#trial = 'https://www.allrecipes.com/recipe/282792/pinto-bean-and-chicken-casserole/'
+#trial = 'https://www.allrecipes.com/recipe/92462/slow-cooker-texas-pulled-pork/'
+#trial = 'https://www.allrecipes.com/recipe/261461/stuffed-bell-pepper-rings/'
+#trial = 'https://www.allrecipes.com/recipe/244929/lemon-meringue-cheesecake/'
+#trial = 'https://www.allrecipes.com/recipe/223042/chicken-parmesan/'
 #trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/47247/chili-rellenos-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/218901/beef-enchiladas-with-spicy-red-sauce/'
 #trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-dinner/'
-#trial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
+#rial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
 #trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
 #trial = 'https://www.allrecipes.com/recipe/110447/melt-in-your-mouth-broiled-salmon/'
 #trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-pork/'
@@ -159,6 +170,7 @@ result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
 #print(ingredients_parsed)
 #veg = to_vegetarian(ingredients_parsed)
+#print(veg)
 #non_veg = to_vegetarian(ingredients_parsed)
 #print(veg)
 
