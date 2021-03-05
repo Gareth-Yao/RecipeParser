@@ -68,7 +68,7 @@ def get_ingredients(all_ingredients):
         for i, token in enumerate(doc):
             if i > 1:
                 break
-            elif i == 0 or i == 1 and token.pos_=='NUM':
+            elif token.pos_=='NUM' and (i == 0 or i == 1):
                 q += float(token.text)
         nouns, m = [token.text for token in doc if token.pos_ == 'NOUN' or token.pos_ == 'PROPN' or token.text == 'seasoning'], ''
         ing_info['quantity'] = q if type(q) is float and q.is_integer() == False else int(q)
@@ -86,7 +86,7 @@ def get_ingredients(all_ingredients):
                 if fuzz.ratio(noun, d) > 90:
                     descriptors.append(noun)
         name = ' '.join([n for n in nouns if n != m and n not in descriptors])
-        prep = [token.text for token in doc if token.text!=m and token.pos_ == 'VERB' or token.pos_ == 'ADV' and token.text!='needed' and token.text!='more'] 
+        prep = [token.text for token in doc if token.text not in measure_words and token.text not in descriptor_words and token.text!=m and (token.pos_ == 'VERB' or token.pos_ == 'ADV') and token.text!='needed' and token.text!='more'] 
         for i, p in enumerate(prep):
             if p == 'taste':
                 prep[i] = 'to taste'
@@ -94,12 +94,16 @@ def get_ingredients(all_ingredients):
                 prep.remove(p)
             elif p =='sour' and 'cream' in name:
                 name = p+' '+name
-                prep.remove(p) 
+                prep.remove(p)
+        for i, t in enumerate(doc):
+            if t.text in prep and i > 0 and doc[i-1].text=='for':
+                descriptors.append('for'+' '+t.text)
+                prep.remove(t.text)
         if 'salt' in name and 'pepper' in name and q == 0:
             temp = name.split(' ')
             temp.remove('pepper')
             new_name, name = ' '.join(temp), 'pepper'
-            ingredients.append({'quantity': 0, 'measurement': '', 'name': new_name, 'descriptor': [], 'preparation': prep})
+            ingredients.append({'quantity': 0, 'measurement': '', 'name': new_name, 'descriptor': [], 'preparation': ['to taste']})
         ing_info['name'] = name
         ing_info['descriptor'] = [token.text for token in doc if token.pos_ == 'ADJ' and token.text != m]
         ing_info['descriptor'] += descriptors
@@ -135,7 +139,7 @@ def from_vegetarian(ings):
     return ings
 
 
-
+trial = 'https://www.allrecipes.com/recipe/223042/chicken-parmesan/'
 #trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/47247/chili-rellenos-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/218901/beef-enchiladas-with-spicy-red-sauce/'
@@ -146,7 +150,7 @@ def from_vegetarian(ings):
 #trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-pork/'
 #trial = 'https://www.allrecipes.com/recipe/269652/tuscan-pork-tenderloin/'
 #trial = 'https://www.allrecipes.com/recipe/158440/sophies-shepherds-pie/'
-trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
+#trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
 #trial = 'https://www.allrecipes.com/recipe/234799/poor-mans-stroganoff/'
 #trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
 #trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
