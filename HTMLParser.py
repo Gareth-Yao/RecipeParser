@@ -4,7 +4,7 @@ import unicodedata
 from nltk import pos_tag, word_tokenize
 from fuzzywuzzy import fuzz
 import re
-from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs
+from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs, measure_words, descriptor_words
 import random
 import spacy
 
@@ -48,14 +48,28 @@ def get_ingredients(all_ingredients):
     for ing in all_ingredients:
         descriptors, ing_info = [], {}
         if '(optional)' in ing.lower():
-            ing = re.sub('\(optional\)','',ing)
+            ing = re.sub('\(optional\)\040','',ing)
             descriptors.append('optional')
-        ing = re.sub('\(.*\)', '', ing)
+        ing = re.sub('\(.*\)\040', '', ing)
         doc = nlp(ing)
-        nums = [token.text for token in doc if token.pos_ == 'NUM']
-        q = 0 if len(nums) < 1 else sum([float(i) for i in nums])
+        nums, nouns = [token.text for token in doc if token.pos_ == 'NUM'], [token.text for token in doc if token.pos_ == 'NOUN' or token.pos_ == 'PROPN']
+        q, m = sum([float(i) for i in nums]) if len(nums) > 0 else 0, ''
         ing_info['quantity'] = q if type(q) is float and q.is_integer() == False else int(q)
-        print(ing_info['quantity'])
+        print(ing)
+        for i, token in enumerate(doc):
+            if len(nums) < 1:
+                break
+            elif token.text in measure_words or token.text+'s' in measure_words or token.text[:-1] in measure_words:
+                m = token.text
+                break
+        # for token in doc:
+        #     print(token, token.pos_)
+        ing_info['measurement'] = m
+        ing_info['name'] = ' '.join([n for n in nouns if n != ing_info['measurement']])
+        ing_info['descriptor'] = [token.text for token in doc if token.pos_ == 'ADJ']
+        ing_info['descriptor'] += descriptors 
+        ing_info['preparation'] = [token.text for token in doc if token.pos_ == 'VERB' or token.pos_ == 'ADV'] 
+        print(ing_info)
 '''
 def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
     measure_words=['tablespoon','teaspoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','clove','fillet','filet','bottle','liter','gram','lb','package','wedge','sheet','cube','stalk','thirds']

@@ -258,3 +258,6 @@ meat_subs = [
         'quantity':8, 'measurement':'ounces', 'name': 'tuna', 'descriptor': [], 'preparation': ['shredded']
     },
 ]
+
+measure_words=['tablespoon','teaspoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','clove','fillet','filet','bottle','liter','gram','lb','package','wedge','sheet','cube','stalk','third']
+descriptor_words=['optional','skin','bone','fine','parts','dried','ground']
