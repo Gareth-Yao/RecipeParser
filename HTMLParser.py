@@ -6,6 +6,7 @@ from fuzzywuzzy import fuzz
 import re
 from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs
 import random
+import spacy
 
 def convertUnicode(s):
     newStr = ""
@@ -40,8 +41,22 @@ def fetchAndParseHTML(url):
     except AttributeError:
         print("Error Fetching Page Information")
         return {}
-
-
+    
+def get_ingredients(all_ingredients):
+    nlp = spacy.load("en_core_web_sm")
+    ingredients = []
+    for ing in all_ingredients:
+        descriptors, ing_info = [], {}
+        if '(optional)' in ing.lower():
+            ing = re.sub('\(optional\)','',ing)
+            descriptors.append('optional')
+        ing = re.sub('\(.*\)', '', ing)
+        doc = nlp(ing)
+        nums = [token.text for token in doc if token.pos_ == 'NUM']
+        q = 0 if len(nums) < 1 else sum([float(i) for i in nums])
+        ing_info['quantity'] = q if type(q) is float and q.is_integer() == False else int(q)
+        print(ing_info['quantity'])
+'''
 def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
     measure_words=['tablespoon','teaspoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','clove','fillet','filet','bottle','liter','gram','lb','package','wedge','sheet','cube','stalk','thirds']
     descriptor_words=['optional','skin','bone','fine','parts','dried','ground']
@@ -99,6 +114,7 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
         ingredients.append(ing_info)
 
     return ingredients
+'''
 
 def to_vegetarian(ings):
     # converts any recipe w/ meat to vegetarian by substituting the meat ingredeints with vegetarian ones
@@ -126,18 +142,13 @@ def from_vegetarian(ings):
 
 
 
-
-
-trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
-
 #trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
-
 #trial = 'https://www.allrecipes.com/recipe/47247/chili-rellenos-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/218901/beef-enchiladas-with-spicy-red-sauce/'
 #trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-dinner/'
 #trial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
 #trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
-#trial = 'https://www.allrecipes.com/recipe/110447/melt-in-your-mouth-broiled-salmon/'
+trial = 'https://www.allrecipes.com/recipe/110447/melt-in-your-mouth-broiled-salmon/'
 #trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-pork/'
 #trial = 'https://www.allrecipes.com/recipe/269652/tuscan-pork-tenderloin/'
 #trial = 'https://www.allrecipes.com/recipe/158440/sophies-shepherds-pie/'
@@ -153,15 +164,7 @@ trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole
 #trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
-veg = to_vegetarian(ingredients_parsed)
-#non_veg = from_vegetarian(ingredients_parsed)
-print(veg)
-
-
-trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
-result = fetchAndParseHTML(trial)
-ingredients_parsed = get_ingredients(result["ingredients"])
-veg = to_vegetarian(ingredients_parsed)
+#veg = to_vegetarian(ingredients_parsed)
 #non_veg = to_vegetarian(ingredients_parsed)
-print(veg)
+#print(veg)
 
