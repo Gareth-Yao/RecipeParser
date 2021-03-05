@@ -4,8 +4,12 @@ import unicodedata
 from nltk import pos_tag, word_tokenize
 from fuzzywuzzy import fuzz
 import re
-from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs
+from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs, prep_words, measure_words, descriptor_words, extra
 import random
+import spacy
+from spacy.tokenizer import Tokenizer
+from spacy.lang.char_classes import ALPHA, ALPHA_LOWER, ALPHA_UPPER, CONCAT_QUOTES, LIST_ELLIPSES, LIST_ICONS
+from spacy.util import compile_infix_regex
 
 def convertUnicode(s):
     newStr = ""
@@ -40,64 +44,80 @@ def fetchAndParseHTML(url):
     except AttributeError:
         print("Error Fetching Page Information")
         return {}
-
-
-def get_ingredients(all_ingredients): #argument is result["ingredients"] of a recipe
-    measure_words=['tablespoon','teaspoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','clove','fillet','filet','bottle','liter','gram','lb','package','wedge','sheet','cube','stalk','thirds']
-    descriptor_words=['optional','skin','bone','fine','parts','dried','ground']
+    
+def get_ingredients(all_ingredients):
+    def custom_tokenizer(nlp):
+        infixes = (LIST_ELLIPSES+LIST_ICONS+ [ r"(?<=[0-9])[+\-\*^](?=[0-9-])",r"(?<=[{al}{q}])\.(?=[{au}{q}])".format(
+                al=ALPHA_LOWER, au=ALPHA_UPPER, q=CONCAT_QUOTES),r"(?<=[{a}]),(?=[{a}])".format(a=ALPHA),
+                r"(?<=[{a}0-9])[:<>=/](?=[{a}])".format(a=ALPHA)])
+        infix_re = compile_infix_regex(infixes)
+        return Tokenizer(nlp.vocab, prefix_search=nlp.tokenizer.prefix_search, suffix_search=nlp.tokenizer.suffix_search,
+                                    infix_finditer=infix_re.finditer, token_match=nlp.tokenizer.token_match, rules=nlp.Defaults.tokenizer_exceptions)
+    nlp = spacy.load("en_core_web_sm")
+    nlp.tokenizer = custom_tokenizer(nlp)
     ingredients = []
     for ing in all_ingredients:
-        measure, descriptors = '', []
+        descriptors, ing_info = [], {}
         if '(optional)' in ing.lower():
             ing = re.sub('\(optional\)','',ing)
             descriptors.append('optional')
-        ing = re.sub('\(.*\)', '', ing)
-        descs, ing_info = pos_tag(word_tokenize(ing)), {}
-        # quantity
-        q = [a[0] for a in descs if a[1] == 'CD']
-        q2 = 0 if len(q) == 0 else sum([float(i) for i in q])
-        ing_info['quantity'] = q2 if (type(q2) is float and q2.is_integer() == False) else int(q2)
-        # measurement
-        nouns = [a[0] for a in descs if ((a[1]=='NN' or a[1]=='NNS' or a[1]=='NNP') or a[0] in herbs_spices or a[0]=='can' or a[0]=='cans' or a[0] in seafood or a[0] in meats) and a[0] not in descriptor_words]
-        for n in nouns:
-            for m in measure_words:
-                if fuzz.ratio(n, m) > 80 and n != 'inch':
-                    measure = n
-                    break
-            for d in descriptor_words:
-                if fuzz.partial_ratio(n, d) > 90:
-                    descriptors.append(n)
-                    break
-            if measure!='':
+        ing = re.sub('\([^()]*\)','',ing)
+        ing = re.sub('  ',' ',ing)
+        ing = re.sub('inch pieces', '', ing)
+        doc, q = nlp(ing), 0
+        for i, token in enumerate(doc):
+            if i > 1:
                 break
-        # name
-        other_descs = [d[0] for d in descs if (d[1]=='JJ' or d[1]=='RB' or d[0] in descriptor_words) and d[0] != measure and d[0] not in nouns]
-        if measure!='':
-            nouns.remove(measure)
-            nouns = [n for n in nouns if n not in descriptors]
-        else:
-            for d in other_descs:
-                for m in measure_words:
-                    if fuzz.ratio(d,m) > 95:
-                        measure = d
-                        other_descs.remove(d)
-                        break
-        nouns = [n for n in nouns if n!='piece' and n!='pieces' and n!='inch' and n!='inches' and n!='thirds']
-        ing_info['measurement'] = measure
-        ing_info['name'] = ' '.join(nouns)
-        # descriptor
-        descriptors.extend(other_descs)
-        ing_info['descriptor'] = descriptors
-        # preparation
-        prep = [a[0] for a in descs if (a[1]=='VBD' or a[1]=='VB' or a[1]=='VBN' or a[1]=='VBP') and a[0] not in descriptors and a[0] not in nouns]
-        for i in range(len(prep)):
-            if prep[i] == 'taste':
+            elif token.pos_=='NUM' and (i == 0 or i == 1):
+                q += float(token.text)
+        nouns, m = [token.text for token in doc if token.pos_ == 'NOUN' or token.pos_ == 'PROPN' or token.text in extra], ''
+        ing_info['quantity'] = q if type(q) is float and q.is_integer() == False else int(q)
+        print(ing)
+        for i, token in enumerate(doc):
+            if q==0:
+                break
+            elif token.text in measure_words or token.text+'s' in measure_words or token.text[:-1] in measure_words and token.text!='cubed' and token.text!='sliced':
+                m = token.text
+                break
+        # for token in doc:
+        #     print(token, token.pos_)
+        for noun in nouns:
+            for d in descriptor_words:
+                if fuzz.ratio(noun, d) > 90:
+                    descriptors.append(noun)
+        name = ' '.join([n for n in nouns if n != m and n not in descriptors])
+        prep = [token.text for token in doc if (token.text in prep_words) or \
+            (token.text not in nouns and token.text not in measure_words and token.text not in descriptor_words and token.text!=m and (token.pos_ == 'VERB' or token.pos_ == 'ADV') and token.text!='needed' and token.text!='more')] 
+        descriptors += [token.text for token in doc if (token.text in descriptor_words and token.text not in descriptors) or token.pos_ == 'ADJ' and token.text != m and token.text not in prep and token.text not in nouns]
+        for i, p in enumerate(prep):
+            if p == 'taste':
                 prep[i] = 'to taste'
-            elif prep[i] == 'needed':
-                prep.remove(prep[i])
+            elif p =='seasoning':
+                prep.remove(p)
+            elif p =='sour' and 'cream' in name:
+                name = p+' '+name
+                prep.remove(p)
+        for i, d in enumerate(descriptors):
+            if d == 'sour' and 'cream' in name:
+                name = d+' '+name
+                descriptors.remove(d)
+                break 
+        for i, t in enumerate(doc):
+            if t.text in prep and i > 0 and doc[i-1].text=='for':
+                descriptors.append('for'+' '+t.text)
+                prep.remove(t.text)
+        if 'salt' in name and 'pepper' in name and q == 0:
+            temp = name.split(' ')
+            temp.remove('pepper')
+            new_name, name = ' '.join(temp), 'pepper'
+            ingredients.append({'quantity': 0, 'measurement': '', 'name': new_name, 'descriptor': [], 'preparation': ['to taste']})
+        ing_info['name'] = name
+        ing_info['descriptor'] = descriptors
         ing_info['preparation'] = prep
+        ing_info['measurement'] = m if m not in prep and m not in ing_info['descriptor'] else ''
         ingredients.append(ing_info)
-
+        print(ing_info)
+    print(ingredients)
     return ingredients
 
 def to_vegetarian(ings):
@@ -124,18 +144,18 @@ def from_vegetarian(ings):
     ings.append(random.choice(meat_subs))
     return ings
 
-
-
-
-
-trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
-
+trial = 'https://www.allrecipes.com/recipe/270712/air-fryer-coconut-shrimp/'
+#trial = 'https://www.allrecipes.com/recipe/221351/german-hamburgers-frikadellen/'
+#trial = 'https://www.allrecipes.com/recipe/282792/pinto-bean-and-chicken-casserole/'
+#trial = 'https://www.allrecipes.com/recipe/92462/slow-cooker-texas-pulled-pork/'
+#trial = 'https://www.allrecipes.com/recipe/261461/stuffed-bell-pepper-rings/'
+#trial = 'https://www.allrecipes.com/recipe/244929/lemon-meringue-cheesecake/'
+#trial = 'https://www.allrecipes.com/recipe/223042/chicken-parmesan/'
 #trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
-
 #trial = 'https://www.allrecipes.com/recipe/47247/chili-rellenos-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/218901/beef-enchiladas-with-spicy-red-sauce/'
 #trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-dinner/'
-#trial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
+#rial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
 #trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
 #trial = 'https://www.allrecipes.com/recipe/110447/melt-in-your-mouth-broiled-salmon/'
 #trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-pork/'
@@ -144,24 +164,13 @@ trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole
 #trial = 'https://www.allrecipes.com/recipe/25678/beef-stew-vi/'
 #trial = 'https://www.allrecipes.com/recipe/234799/poor-mans-stroganoff/'
 #trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
-
-
-# trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
-# result = fetchAndParseHTML(trial)
-# ingredients_parsed = get_ingredients(result["ingredients"])
-
 #trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
+
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
-veg = to_vegetarian(ingredients_parsed)
-#non_veg = from_vegetarian(ingredients_parsed)
-print(veg)
-
-
-trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
-result = fetchAndParseHTML(trial)
-ingredients_parsed = get_ingredients(result["ingredients"])
-veg = to_vegetarian(ingredients_parsed)
+#print(ingredients_parsed)
+#veg = to_vegetarian(ingredients_parsed)
+#print(veg)
 #non_veg = to_vegetarian(ingredients_parsed)
-print(veg)
+#print(veg)
 
