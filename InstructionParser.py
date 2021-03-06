@@ -4,6 +4,7 @@ import HTMLParser
 import spacy
 from fractions import Fraction
 from fuzzywuzzy import fuzz
+from word2number import w2n
 download_corpora.main()
 nlp = spacy.load("en_core_web_sm")
 target_preps = ["in","with","on","of"]
@@ -13,15 +14,14 @@ secondary_cooking_methods = ["cook","stir"]
 
 
 def parseToolsAndCookingMethod(url, replaceEmptyMainMethod = True):
-    x = fuzz.token_set_ratio("place chicken cutlets", "chicken breasts")
     results = HTMLParser.fetchAndParseHTML(url)
     instructions = results["instructions"]
     ingredients_parsed = HTMLParser.get_ingredients(results["ingredients"])
-    ingredients = [i['name'] for i in ingredients_parsed]
+    ingredients = set([i['name'] for i in ingredients_parsed])
     steps = []
     verbs = {}
     secondary_verbs = {}
-    tools = set() #Could use ingredients to filter out
+    tools = set()
     for i in instructions:
         instruction = nlp(i)
         for s in instruction.sents:
@@ -71,12 +71,21 @@ def parseToolsAndCookingMethod(url, replaceEmptyMainMethod = True):
                     tools.add(full_tool)
                     step['tools'].append(full_tool)
                 elif token.pos_ == "NUM" and token.ent_type_ == "TIME":
-                    if "second" in token.head.text:
-                        time +=  Fraction(token.text) / 60
-                    elif "minute" in token.head.text:
-                        time +=  Fraction(token.text)
-                    else:
-                        time += Fraction(token.text) * 60
+                    try:
+                        t = w2n.word_to_num(token.text)
+                        if "second" in token.head.text:
+                            time +=  Fraction(t) / 60
+                        elif "minute" in token.head.text:
+                            time +=  Fraction(t)
+                        else:
+                            time += Fraction(t) * 60
+                    except ValueError:
+                        if "second" in token.head.text:
+                            time +=  Fraction(token.text) / 60
+                        elif "minute" in token.head.text:
+                            time +=  Fraction(token.text)
+                        else:
+                            time += Fraction(token.text) * 60
 
 
             if len(method) != 0:

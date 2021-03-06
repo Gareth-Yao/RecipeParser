@@ -1,4 +1,4 @@
-meats = [
+meats = {
     'pork',
     'poultry',
     'seafood',
@@ -42,9 +42,9 @@ meats = [
     'squab',
     'emu',
     'mutton'
-]
+}
 
-seafood = [
+seafood = {
     'fish','shellfish','roe','crustacean','seaweed','anchovies',
     'basa','bass','cod','sablefish','blowfish','bluefish','bream','brill',
     'butter fish', 'catfish', 'dogfish', 'dorade', 'eel', 'flounder', 'grouper',
@@ -56,30 +56,30 @@ seafood = [
     'ikura','lumpfish','kazunoko','masago','topiko','flying fish','crab','crawfish','crayfish','lobster','shrimp',
     'prawn','cockle','cuttlefish','clam','loco','mussel','octopus','oyster','periwinkle','scallop',
     'squid','conch','snail','nautilus','sea cucumber','sea urchin','urchin','jellyfishh','sea fig'
-]
+}
 
-vegetables = [
-    'Achoccha',
-    'Amaranth',
-    'Angelica',
-    'Anise',
-    'Arrowroot',
-    'Arrugula',
-    'Artichoke, globe',
-    'Artichoke, Jerusalem',
-    'Asparagus',
-    'Balsam Apple',
-    'Balsam Pear',
-    'Bambara groundnut',
-    'Bamboo',
-    'Beans',
-    'Beet',
-    'Bok Choy',
-    'Boniato',
-	'Broccoli',
-	'Brussels',
+vegetables = {
+    'achoccha',
+    'amaranth',
+    'angelica',
+    'anise',
+    'arrowroot',
+    'arrugula',
+    'artichoke, globe',
+    'artichoke, jerusalem',
+    'asparagus',
+    'balsam apple',
+    'balsam pear',
+    'bambara groundnut',
+    'bamboo',
+    'beans',
+    'beet',
+    'bok choy',
+    'boniato',
+	'broccoli',
+	'brussels',
 	'sprouts',
-	'Burdock',
+	'burdock',
 	'cabbage',
 	'chinese cabbage',
 	'calabaza',
@@ -114,7 +114,6 @@ vegetables = [
 	'endive',
 	'fennel',
 	'garbanzo',
-	'garlic',
 	'gherkin',
 	'ginger',
 	'ginseng',
@@ -197,7 +196,7 @@ vegetables = [
 	'watercress',
 	'watermelon',
 	'yams'
-]
+}
 
 vegetarian_subs = [
     {
@@ -234,7 +233,7 @@ vegetarian_subs = [
 
 herbs_spices = [
     'cheese', 'gravy','sauce','tomato','chili','garlic','rosemary','ginger','parsley','cumin','nutmeg','coriander','paprika','chives',
-    'oregano','thyme','basil','salt','pepper','dill','cardamom','allspice','cayenne','cayenne pepper','saffron',
+    'oregano','thyme','basil','salt','pepper','dill','cardamom','allspice','cayenne','cayenne pepper','saffron', 'garlic',
     'anise','chervil','celery','sage','tarragon','chicory','lovage','marjoram','vanilla','clove','prosciutto','carrots','carrot','sour cream'
 ]
 
