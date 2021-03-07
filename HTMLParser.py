@@ -78,16 +78,14 @@ def get_ingredients(all_ingredients):
             elif token.text in measure_words or token.text+'s' in measure_words or token.text[:-1] in measure_words and token.text!='cubed' and token.text!='sliced':
                 m = token.text
                 break
-        # for token in doc:
-        #     print(token, token.pos_)
         for noun in nouns:
             for d in descriptor_words:
                 if fuzz.ratio(noun, d) > 90:
                     descriptors.append(noun)
         name = ' '.join([n for n in nouns if n != m and n not in descriptors])
-        prep = [token.text for token in doc if (token.text in prep_words) or \
-            (token.text not in nouns and token.text not in measure_words and token.text not in descriptor_words and token.text!=m and (token.pos_ == 'VERB' or token.pos_ == 'ADV') and token.text!='needed' and token.text!='more')] 
-        descriptors += [token.text for token in doc if (token.text in descriptor_words and token.text not in descriptors) or token.pos_ == 'ADJ' and token.text != m and token.text not in prep and token.text not in nouns]
+        prep = [token.text for token in doc if (token.text in prep_words and token.text not in nouns) or \
+            (token.text not in nouns and token.text not in measure_words and token.text not in descriptor_words and token.text!=m and (token.pos_ == 'VERB' or token.pos_ == 'ADV') and token.text!='needed' and token.text!='more')]
+        descriptors += [token.text for token in doc if (token.text in descriptor_words and token.text not in descriptors) or token.pos_ == 'ADJ' and token.text != m and token.text not in prep and token.text not in nouns and token.text!='more']
         for i, p in enumerate(prep):
             if p == 'taste':
                 prep[i] = 'to taste'
@@ -142,6 +140,45 @@ def from_vegetarian(ings):
     res.append(random.choice(meat_subs))
     return res
 
+def format_ings(ings):
+    print(ings)
+    res = []
+    for ing in ings:
+        optional, for_words = False, []
+        temp = '' if ing['quantity'] == 0 else str(ing['quantity'])+' '
+        temp += ing['measurement']+' ' if len(ing['measurement']) > 0 else ''
+        d, p = ing['descriptor'], ing['preparation']
+        if len(d) > 0:
+            des_temp = ''
+            for des in d:
+                if des == 'optional':
+                    optional = True
+                elif 'for' in des:
+                    for_words.append(des)
+                else:
+                    des_temp += des + ', '
+            des_temp = des_temp[:-2] + ' '
+            temp += des_temp
+        temp += ing['name']
+        if len(p) > 0:
+            temp_prep = ''
+            for prep in p:
+                if prep == 'finely' or prep == 'thinly' or prep=='freshly':
+                    temp_prep += prep + ' '
+                elif prep == 'optional':
+                    optional = True
+                else:
+                    temp_prep += prep + ', '
+            temp_prep = temp_prep[:-2]
+            temp += ', ' + temp_prep
+        if len(for_words) > 0:
+            temp += ', '+', '.join(for_words)
+        if optional:
+            temp += ' (optional)'
+        res.append(temp.strip())
+    print(res)
+    return res 
+
 #trial = 'https://www.allrecipes.com/recipe/270712/air-fryer-coconut-shrimp/'
 #trial = 'https://www.allrecipes.com/recipe/221351/german-hamburgers-frikadellen/'
 #trial = 'https://www.allrecipes.com/recipe/282792/pinto-bean-and-chicken-casserole/'
@@ -149,12 +186,12 @@ def from_vegetarian(ings):
 #trial = 'https://www.allrecipes.com/recipe/261461/stuffed-bell-pepper-rings/'
 #trial = 'https://www.allrecipes.com/recipe/244929/lemon-meringue-cheesecake/'
 #trial = 'https://www.allrecipes.com/recipe/223042/chicken-parmesan/'
-#trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
+trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/47247/chili-rellenos-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/218901/beef-enchiladas-with-spicy-red-sauce/'
 #trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-dinner/'
 #rial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
-trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
+#trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
 #trial = 'https://www.allrecipes.com/recipe/110447/melt-in-your-mouth-broiled-salmon/'
 #trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-pork/'
 #trial = 'https://www.allrecipes.com/recipe/269652/tuscan-pork-tenderloin/'
@@ -166,9 +203,4 @@ trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
 
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
-#print(ingredients_parsed)
-#veg = to_vegetarian(ingredients_parsed)
-#print(veg)
-non_veg = from_vegetarian(ingredients_parsed)
-print(non_veg)
-
+format_ings(ingredients_parsed)
