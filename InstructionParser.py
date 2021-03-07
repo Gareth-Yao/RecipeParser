@@ -11,8 +11,7 @@ cooking_methods = ["bake","fry","roast","grill","steam","poach","simmer","broil"
 secondary_cooking_methods = ["cook","stir"]
 
 
-def parseToolsAndCookingMethod(url, replaceEmptyMainMethod = True):
-    results = HTMLParser.fetchAndParseHTML(url)
+def parseToolsAndCookingMethod(results, replaceEmptyMainMethod = True):
     instructions = results["instructions"]
     ingredients_parsed = HTMLParser.get_ingredients(results["ingredients"])
     ingredients = set([i['name'] for i in ingredients_parsed])

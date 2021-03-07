@@ -5,18 +5,19 @@ import json
 import random
 import spacy
 nlp = spacy.load("en_core_web_sm")
-url = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
-def toVeggie(url):
-    steps = InstructionParser.parseToolsAndCookingMethod(url)
+url = "https://www.allrecipes.com/recipe/213654/chicken-asparagus-and-mushroom-skillet/"
+def toVeggie(steps):
     replacements = HTMLParser.to_vegetarian(steps['ingredients'])
-    steps = steps['steps']
-    for s in steps:
+    for i in steps['ingredients']:
+        if i['name'] in replacements.keys():
+            i['name'] = replacements[i['name']]
+    for s in steps['steps']:
         for i in s['ingredients'].keys():
             if s['ingredients'][i] in replacements.keys():
                 s['instruction'] = s['instruction'].replace(i, replacements[s['ingredients'][i]]['name'])
-    print(replacements)
+    return steps
 
-def fromVeggie(url):
+def fromVeggie(steps):
     pass
 
 def toItalian(url):
@@ -93,5 +94,5 @@ def toItalian(url):
     print(steps['steps'])
     return steps
 
-toItalian(url)
+# toItalian(url)
 # toVeggie(url)
