@@ -1,11 +1,9 @@
-from textblob import TextBlob
-import textblob.download_corpora as download_corpora
 import HTMLParser
 import spacy
 from fractions import Fraction
 from fuzzywuzzy import fuzz
 from word2number import w2n
-download_corpora.main()
+
 nlp = spacy.load("en_core_web_sm")
 target_preps = ["in","with","on","of"]
 non_tool = ["top","meat","side","sides",'heat']
@@ -29,8 +27,8 @@ def parseToolsAndCookingMethod(url, replaceEmptyMainMethod = True):
             secondary_method = []
             time = 1
             step = {}
-            step['secondary_action'] = ''
-            step['action'] = ''
+            step['secondary_action'] = []
+            step['action'] = []
             step['instruction'] = s.text
             step['tools'] = []
             step['ingredients'] = {}
@@ -95,7 +93,7 @@ def parseToolsAndCookingMethod(url, replaceEmptyMainMethod = True):
             if len(secondary_method) != 0:
                 for m in secondary_method:
                     secondary_verbs[m] = secondary_verbs.get(m, 0) + time
-                step['secondary_action'] = method
+                step['secondary_action'] = secondary_method
 
             steps.append(step)
     secondary_cooking_method = max(secondary_verbs.items(), key=lambda key : key[1])[0] if len(secondary_verbs.keys()) != 0 else ''
