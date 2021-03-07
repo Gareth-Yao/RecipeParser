@@ -72,7 +72,6 @@ def get_ingredients(all_ingredients):
                 q += float(token.text)
         nouns, m = [token.text for token in doc if token.pos_ == 'NOUN' or token.pos_ == 'PROPN' or token.text in extra], ''
         ing_info['quantity'] = q if type(q) is float and q.is_integer() == False else int(q)
-        print(ing)
         for i, token in enumerate(doc):
             if q==0:
                 break
@@ -116,8 +115,6 @@ def get_ingredients(all_ingredients):
         ing_info['preparation'] = prep
         ing_info['measurement'] = m if m not in prep and m not in ing_info['descriptor'] else ''
         ingredients.append(ing_info)
-        print(ing_info)
-    print(ingredients)
     return ingredients
 
 def to_vegetarian(ings):
@@ -136,15 +133,16 @@ def to_vegetarian(ings):
 
 def from_vegetarian(ings):
     # check if vegetarian. if yes, converts a recipe from vegetarian to non vegetarian by adding a meat sub. if no, do nothing
+    res = []
     for i, ing in enumerate(ings):
         tokens = ing['name'].lower().split(' ')
         for t in tokens:
             if t in meats or t+'s' in meats or t in seafood or t+'s' in seafood:
-                return ings
-    ings.append(random.choice(meat_subs))
-    return ings
+                return res
+    res.append(random.choice(meat_subs))
+    return res
 
-trial = 'https://www.allrecipes.com/recipe/270712/air-fryer-coconut-shrimp/'
+#trial = 'https://www.allrecipes.com/recipe/270712/air-fryer-coconut-shrimp/'
 #trial = 'https://www.allrecipes.com/recipe/221351/german-hamburgers-frikadellen/'
 #trial = 'https://www.allrecipes.com/recipe/282792/pinto-bean-and-chicken-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/92462/slow-cooker-texas-pulled-pork/'
@@ -156,7 +154,7 @@ trial = 'https://www.allrecipes.com/recipe/270712/air-fryer-coconut-shrimp/'
 #trial = 'https://www.allrecipes.com/recipe/218901/beef-enchiladas-with-spicy-red-sauce/'
 #trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-dinner/'
 #rial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
-#trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
+trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
 #trial = 'https://www.allrecipes.com/recipe/110447/melt-in-your-mouth-broiled-salmon/'
 #trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-pork/'
 #trial = 'https://www.allrecipes.com/recipe/269652/tuscan-pork-tenderloin/'
@@ -171,6 +169,6 @@ ingredients_parsed = get_ingredients(result["ingredients"])
 #print(ingredients_parsed)
 #veg = to_vegetarian(ingredients_parsed)
 #print(veg)
-#non_veg = to_vegetarian(ingredients_parsed)
-#print(veg)
+non_veg = from_vegetarian(ingredients_parsed)
+print(non_veg)
 
