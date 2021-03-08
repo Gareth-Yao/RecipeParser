@@ -3,3 +3,4 @@ requests
 nltk
 fuzzywuzzy
 spacy
+word2number

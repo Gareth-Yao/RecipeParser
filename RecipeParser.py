@@ -8,17 +8,23 @@ def RecipeParser(url, toVegetarian, toHealthy, toItalian):
     if toItalian:
         steps = Transformation.toItalian(results)
     else:
-        steps = InstructionParser.parseToolsAndCookingMethod(url)
+        steps = InstructionParser.parseToolsAndCookingMethod(results)
     if toVegetarian:
         steps = Transformation.toVeggie(steps)
     else:
         steps = Transformation.fromVeggie(steps)
 
     print("This Recipe Parse will transform", "\"" + results['name'] + "\"", "to:", "Italian" if toItalian else "", "Vegetarian" if toVegetarian else "Non-Vegetarian", "and", "Healthy" if toHealthy else "Non-Healthy")
-    for i in steps['ingredients']:
+    res = HTMLParser.format_ings(steps['ingredients'])
+    print("The Ingredients are: ")
+    for i in res:
         print(i)
+    print()
+    print("The Steps Are:")
+    counter = 1
     for s in steps['steps']:
-        print(s['instruction'])
+        print(str(counter) + ".", s['instruction'])
+        counter += 1
 
 if __name__ == '__main__':
     url = sys.argv[1]
