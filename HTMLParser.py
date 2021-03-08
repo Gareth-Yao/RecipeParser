@@ -4,7 +4,7 @@ import unicodedata
 from nltk import pos_tag, word_tokenize
 from fuzzywuzzy import fuzz
 import re
-from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs, prep_words, measure_words, descriptor_words, extra
+from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs, prep_words, measure_words, descriptor_words, extra, vegetables
 import random
 import spacy
 from spacy.tokenizer import Tokenizer
@@ -123,7 +123,8 @@ def to_vegetarian(ings):
         for t in tokens:
             if t in meats or t+'s' in meats or t in seafood or t+'s' in seafood:
                 ran = random.choice(replaced)
-                ran['measurement'], ran['quantity'] = ing['measurement'], ing['quantity']
+                m, q = ing['measurement'], ing['quantity']
+                ran['measurement'], ran['quantity'] = m if m!= '' else ran['measurement'], q if q!= 0 else ran['quantity']
                 res[ing['name']] = ran
                 replaced.remove(ran)
                 break
@@ -131,17 +132,25 @@ def to_vegetarian(ings):
 
 def from_vegetarian(ings):
     # check if vegetarian. if yes, converts a recipe from vegetarian to non vegetarian by adding a meat sub. if no, do nothing
-    res = []
+    res, veg, veg_i = {}, True, 0
     for i, ing in enumerate(ings):
         tokens = ing['name'].lower().split(' ')
         for t in tokens:
             if t in meats or t+'s' in meats or t in seafood or t+'s' in seafood:
-                return res
-    res.append(random.choice(meat_subs))
+                veg = False
+                break
+            elif t in vegetables or t+'s' in vegetables:
+                veg_i = i
+        if veg == False:
+            break
+    if veg == True:
+        ran = random.choice(meat_subs)
+        m, q = ings[veg_i]['measurement'], ings[veg_i]['quantity']
+        ran['measurement'], ran['quantity'] = m if m!= '' else ran['measurement'], q if q!= 0 else ran['quantity']
+        res[ings[veg_i]['name']] = ran
     return res
 
 def format_ings(ings):
-    print(ings)
     res = []
     for ing in ings:
         optional, for_words = False, []
@@ -157,7 +166,7 @@ def format_ings(ings):
                     for_words.append(des)
                 else:
                     des_temp += des + ', '
-            des_temp = des_temp[:-2] + ' '
+            des_temp = des_temp[:-2] + ' ' if des_temp[-2:]==', ' else des_temp
             temp += des_temp
         temp += ing['name']
         if len(p) > 0:
@@ -176,9 +185,10 @@ def format_ings(ings):
         if optional:
             temp += ' (optional)'
         res.append(temp.strip())
-    print(res)
     return res 
 
+trial = 'https://www.allrecipes.com/recipe/60598/vegetarian-korma/'
+#trial = 'https://www.allrecipes.com/recipe/246631/savory-vegetarian-quinoa/'
 #trial = 'https://www.allrecipes.com/recipe/270712/air-fryer-coconut-shrimp/'
 #trial = 'https://www.allrecipes.com/recipe/221351/german-hamburgers-frikadellen/'
 #trial = 'https://www.allrecipes.com/recipe/282792/pinto-bean-and-chicken-casserole/'
@@ -186,11 +196,11 @@ def format_ings(ings):
 #trial = 'https://www.allrecipes.com/recipe/261461/stuffed-bell-pepper-rings/'
 #trial = 'https://www.allrecipes.com/recipe/244929/lemon-meringue-cheesecake/'
 #trial = 'https://www.allrecipes.com/recipe/223042/chicken-parmesan/'
-trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
+#trial = 'https://www.allrecipes.com/recipe/231808/grandmas-ground-beef-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/47247/chili-rellenos-casserole/'
 #trial = 'https://www.allrecipes.com/recipe/218901/beef-enchiladas-with-spicy-red-sauce/'
 #trial = 'https://www.allrecipes.com/recipe/89965/vegetarian-southwest-one-pot-dinner/'
-#rial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
+#trial = 'https://www.allrecipes.com/recipe/156232/my-special-shrimp-scampi-florentine/'
 #trial = 'https://www.allrecipes.com/recipe/268026/instant-pot-corned-beef/'
 #trial = 'https://www.allrecipes.com/recipe/110447/melt-in-your-mouth-broiled-salmon/'
 #trial = 'https://www.allrecipes.com/recipe/268514/instant-pot-dr-pepper-pulled-pork/'
