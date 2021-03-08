@@ -258,10 +258,10 @@ meat_subs = [
     },
 ]
 
-measure_words=['tablespoon','teaspoon','tbsp','tsp','spoon','cup','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','clove','fillet','filet','bottle','liter','gram','lb','package','wedge','sheet','pint','cube','stalk','third']
+measure_words=['tablespoon','teaspoon','tbsp','tsp','spoon','cup','bunch','quart','pint','slice','piece','round','pound','ounce','gallon','ml','g','pinch','fluid','drop','gill','can','half','halves','head','oz','clove','fillet','filet','bottle','liter','gram','lb','package','wedge','sheet','pint','cube','stalk','third']
 
-descriptor_words=['optional','boneless','skin','bone','fine','parts','dried','ground','skinless','flaked']
+descriptor_words=['optional','boneless','skin','bone','fine','parts','dried','skinless','flaked']
 
-prep_words=['diced','cooked','drained','undrained','seeded']
+prep_words=['diced','cooked','drained','undrained','seeded','ground']
 
-extra=['cooking','garlic','seasoning','extract','tomato']
+extra=['cooking','garlic','seasoning','extract','tomato','quinoa','curry']
