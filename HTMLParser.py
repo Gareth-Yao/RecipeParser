@@ -151,10 +151,16 @@ def from_vegetarian(ings):
     return res
 
 def format_ings(ings):
+    def dec_to_mixed_frac(dec):
+        if isinstance(dec, int): return str(dec)
+        n, d = dec.as_integer_ratio()
+        a, b = n//d, n%d
+        if a == 0: return "{}/{}".format(b,d)
+        else: return "{} {}/{}".format(a,b,d)
     res = []
     for ing in ings:
         optional, for_words = False, []
-        temp = '' if ing['quantity'] == 0 else str(ing['quantity'])+' '
+        temp = '' if ing['quantity'] == 0 else dec_to_mixed_frac(ing['quantity'])+' '
         temp += ing['measurement']+' ' if len(ing['measurement']) > 0 else ''
         d, p = ing['descriptor'], ing['preparation']
         if len(d) > 0:
@@ -213,4 +219,4 @@ trial = 'https://www.allrecipes.com/recipe/60598/vegetarian-korma/'
 
 result = fetchAndParseHTML(trial)
 ingredients_parsed = get_ingredients(result["ingredients"])
-format_ings(ingredients_parsed)
+print(format_ings(ingredients_parsed))
