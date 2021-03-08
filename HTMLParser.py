@@ -1,7 +1,10 @@
+from nltk.tokenize import sent_tokenize
 import requests
 from bs4 import BeautifulSoup
 import unicodedata
+import nltk
 from nltk import pos_tag, word_tokenize
+from nltk.stem import PorterStemmer
 from fuzzywuzzy import fuzz
 import re
 
@@ -93,8 +96,43 @@ def get_ingredients(all_ingredients): #argument is result["ingredients"] of a re
         print(ing_info)
         print()
         ingredients.append(ing_info)
+    return ingredients
 
-#trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
-trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
+def get_tools(instructions):#argument is result["instructions"]
+    ps = PorterStemmer
+    common_tools = ["saucepan", "pan", "skillet", "pot", "sheet", "whisk", "bowl", "tongs", "thermometer", "dish", "blender", "colander", "grater", "processor", "peeler"]
+    cut_words = ["slice", "quarter", "dice", "mince", "julienne", "halve", "chop", "cut", "cube"]
+    tools = {}
+    for i in instructions:
+        i = re.sub('\(.*\)', '', i)
+        i = re.sub('\;', '\.', i)
+        sentences = sent_tokenize(i)
+        i_new = ""
+        for sentence in sentences:
+            new_sentence = "we " + sentence + " "
+            i_new += new_sentence
+        print(i_new)
+        descs = pos_tag(word_tokenize(i_new))
+        print(descs)
+        for idx, desc in enumerate(descs):
+            if desc[0] in common_tools:
+                i = 1
+                while descs[idx - i][1] == 'JJ' or descs[idx - i][1] == 'NN' or descs[idx - i][1] == 'VBN':
+                    i += 1
+                
+
+        
+    
+    
+
+
+# trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
+# trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
+# trial = "https://www.allrecipes.com/recipe/269758/mediterranean-chicken-medley-with-eggplant-and-feta/"
+trial = "https://www.allrecipes.com/recipe/220130/chef-johns-chicken-cacciatore/"
 result = fetchAndParseHTML(trial)
-ingredients_parsed = get_ingredients(result["ingredients"])
+# ingredients_parsed = get_ingredients(result["ingredients"])
+get_tools(result["instructions"])
+test = "i own the fourth dutch oven"
+tested = pos_tag(word_tokenize(test))
+print(tested)
