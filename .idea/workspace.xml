@@ -5,7 +5,11 @@
       <change afterPath="$PROJECT_DIR$/RecipeParser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/InstructionParser.py" beforeDir="false" afterPath="$PROJECT_DIR$/InstructionParser.py" afterDir="false" />
+<<<<<<< Updated upstream
       <change beforePath="$PROJECT_DIR$/Transformation.py" beforeDir="false" afterPath="$PROJECT_DIR$/Transformation.py" afterDir="false" />
+=======
+      <change beforePath="$PROJECT_DIR$/RecipeParser.py" beforeDir="false" afterPath="$PROJECT_DIR$/RecipeParser.py" afterDir="false" />
+>>>>>>> Stashed changes
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -221,6 +225,11 @@
           <line>17</line>
           <option name="timeStamp" value="50" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/InstructionParser.py</url>
+          <line>107</line>
+          <option name="timeStamp" value="52" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -228,7 +237,11 @@
     <SUITE FILE_PATH="coverage/RecipeParser$InstructionParser.coverage" NAME="InstructionParser Coverage Results" MODIFIED="1614882912452" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/RecipeParser$Transformation.coverage" NAME="Transformation Coverage Results" MODIFIED="1615150028132" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/RecipeParser$HTMLParser.coverage" NAME="HTMLParser Coverage Results" MODIFIED="1614375669605" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+<<<<<<< Updated upstream
     <SUITE FILE_PATH="coverage/RecipeParser$RecipeParser.coverage" NAME="RecipeParser Coverage Results" MODIFIED="1615152451850" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+=======
+    <SUITE FILE_PATH="coverage/RecipeParser$RecipeParser.coverage" NAME="RecipeParser Coverage Results" MODIFIED="1615170203889" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+>>>>>>> Stashed changes
     <SUITE FILE_PATH="coverage/RecipeParser$StyleOfCuisine.coverage" NAME="StyleOfCuisine Coverage Results" MODIFIED="1614995023773" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

@@ -8,7 +8,7 @@ nlp = spacy.load("en_core_web_sm")
 target_preps = ["in","with","on","of"]
 non_tool = ["top","meat","side","sides",'heat']
 cooking_methods = ["bake","fry","roast","grill","steam","poach","simmer","broil","blanch","braise","stew"]
-secondary_cooking_methods = ["cook","stir"]
+secondary_methods = ['stir', 'cook', 'combine', 'season', 'garnish']
 
 
 def parseToolsAndCookingMethod(results, replaceEmptyMainMethod = True):
@@ -50,7 +50,7 @@ def parseToolsAndCookingMethod(results, replaceEmptyMainMethod = True):
 
                 if (token.dep_ == "ROOT" or token.dep_ == "nsubj" or token.dep_ == 'dep' or token.left_edge == token) and token.lemma_ in cooking_methods:
                     method.append(token.lemma_)
-                elif (token.dep_ == "ROOT" or token.dep_ == "nsubj") and token.lemma_ in secondary_cooking_methods:
+                elif (token.dep_ == "ROOT" or token.dep_ == "nsubj") and token.pos_ == "VERB":
                     secondary_method.append(token.lemma_)
                 elif token.pos_ == "NOUN" and (token.dep_ == 'dobj' or token.head.text in target_preps) and token.text not in non_tool and token.ent_type_ == '':
                     full_tool = ""
@@ -95,13 +95,13 @@ def parseToolsAndCookingMethod(results, replaceEmptyMainMethod = True):
                 step['secondary_action'] = secondary_method
 
             steps.append(step)
-    secondary_cooking_method = max(secondary_verbs.items(), key=lambda key : key[1])[0] if len(secondary_verbs.keys()) != 0 else ''
+    max_secondary_cooking_method = max(secondary_verbs.items(), key=lambda key : key[1])[0] if len(secondary_verbs.keys()) != 0 else ''
     if replaceEmptyMainMethod:
-        main_cooking_method = max(verbs.items(), key=lambda key: key[1])[0] if len(verbs.keys()) != 0 else secondary_cooking_method
+        main_cooking_method = max(verbs.items(), key=lambda key: key[1])[0] if len(verbs.keys()) != 0 else max_secondary_cooking_method
     else:
         main_cooking_method = max(verbs.items(), key=lambda key: key[1])[0] if len(verbs.keys()) != 0 else ''
     ans = {'main_cooking_method' : main_cooking_method,
-           'secondary_cooking_method' : secondary_cooking_method,
+           'secondary_cooking_methods' : secondary_verbs.keys(),
            'ingredients' : ingredients_parsed,
            'tools' : tools,
            'steps' : steps}

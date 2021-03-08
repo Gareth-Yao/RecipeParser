@@ -17,6 +17,21 @@ def RecipeParser(url, toVegetarian, toHealthy, toItalian):
     print("This Recipe Parse will transform", "\"" + results['name'] + "\"", "to:", "Italian" if toItalian else "", "Vegetarian" if toVegetarian else "Non-Vegetarian", "and", "Healthy" if toHealthy else "Non-Healthy")
     for i in steps['ingredients']:
         print(i)
+<<<<<<< Updated upstream
+=======
+    print()
+    print("The Tools are:")
+    for t in steps['tools']:
+        print(t)
+    print()
+    print("The Primary Cooking Method is:")
+    print(steps['main_cooking_method'])
+    print()
+    print("The Secondary Cooking Method is:")
+    print(steps['secondary_cooking_method'])
+    print("The Steps Are:")
+    counter = 1
+>>>>>>> Stashed changes
     for s in steps['steps']:
         print(s['instruction'])
 
