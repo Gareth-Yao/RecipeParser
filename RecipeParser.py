@@ -25,8 +25,9 @@ def RecipeParser(url, toVegetarian, toHealthy, toItalian):
     print("The Primary Cooking Method is:")
     print(steps['main_cooking_method'])
     print()
-    print("The Secondary Cooking Method is:")
+    print("The Secondary Cooking Methods Are:")
     print(steps['secondary_cooking_methods'])
+    print()
     print("The Steps Are:")
     counter = 1
 

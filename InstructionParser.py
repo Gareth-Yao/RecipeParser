@@ -7,8 +7,16 @@ from word2number import w2n
 nlp = spacy.load("en_core_web_sm")
 target_preps = ["in","with","on","of"]
 non_tool = ["top","meat","side","sides",'heat']
-cooking_methods = ["bake","fry","roast","grill","steam","poach","simmer","broil","blanch","braise","stew"]
-secondary_methods = ['stir', 'cook', 'combine', 'season', 'garnish']
+cooking_methods = ["bake","fry","roast","grill","steam","poach","simmer","broil","blanch","braise","stew", 'boil', "sautee", "stir fry", "brown", "sear"]
+secondary_methods = ['stir', 'cook', 'combine', 'season','garnish','mix','sprinkle','spray','spread'"chop", "slice", "dice", "mince", "grate", "zest"]
+
+kitchen_tools = ["oven", "stove", "burner", "grill", "toaster", "pan", "non-stick pan", "pot", "dutch oven",
+                 "knife", "chef's knife", "paring knife", "garlic press", "spoon", "bowl", "whisk", "grater",
+                 "microwave", "skillet", "saucepan", "baking tray", "baking dish", "baking pan", "cake pan",
+                 "baking sheet", "cookie sheet", "mixer", "strainer", "colander", "sifter", "blender", "food processor",
+                 "foil", "alunimum foil", "parchment paper", "wax paper", "slow cooker", "rice cooker", "sous vide",
+                 "crock pot",
+                 "zester", "juicer", "casserole dish", "dish"]
 
 
 def parseToolsAndCookingMethod(results, replaceEmptyMainMethod = True):
@@ -50,7 +58,7 @@ def parseToolsAndCookingMethod(results, replaceEmptyMainMethod = True):
 
                 if (token.dep_ == "ROOT" or token.dep_ == "nsubj" or token.dep_ == 'dep' or token.left_edge == token) and token.lemma_ in cooking_methods:
                     method.append(token.lemma_)
-                elif (token.dep_ == "ROOT" or token.dep_ == "nsubj") and token.pos_ == "VERB":
+                elif (token.dep_ == "ROOT" or token.dep_ == "nsubj") and token.lemma_ in secondary_methods:
                     secondary_method.append(token.lemma_)
                 elif token.pos_ == "NOUN" and (token.dep_ == 'dobj' or token.head.text in target_preps) and token.text not in non_tool and token.ent_type_ == '':
                     full_tool = ""
@@ -65,7 +73,8 @@ def parseToolsAndCookingMethod(results, replaceEmptyMainMethod = True):
                     right = right[:-1] if len(right) != 0 and not right[-1].isalnum() else right
                     if 'of' in right or 'in' in right or any(len(set(ing.split()).intersection(full_tool.split())) > 0 for ing in ingredients):
                         continue
-                    tools.add(full_tool)
+                    if not any(len(set(t.split()).intersection(full_tool.split())) > 0 for t in tools):
+                        tools.add(full_tool)
                     step['tools'].append(full_tool)
                 elif token.pos_ == "NUM" and token.ent_type_ == "TIME":
                     try:
