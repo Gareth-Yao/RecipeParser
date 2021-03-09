@@ -265,3 +265,11 @@ descriptor_words=['optional','boneless','skin','bone','fine','parts','dried','sk
 prep_words=['diced','cooked','drained','undrained','seeded','ground']
 
 extra=['cooking','garlic','seasoning','extract','tomato','quinoa','curry']
+
+dairy = ['yogurt', 'greek yogurt', 'cream cheese', 'cottage cheese', 'sour cream',
+         'milk', 'cream', 'mozzarella cheese', 'mozzarella', 'feta cheese', 'feta',
+         'cheese', 'cheddar cheese', 'american cheese', 'ricotta cheese', 'havarti cheese',
+         'colby jack cheese', 'swiss cheese', 'pepper jack cheese', 'monterey jack cheese',
+         'cheddar', 'ricotta', 'havarti', 'colby jack', 'pepper jack', 'swiss', 'monterey jack']
+
+oils = ['olive oil', 'canola oil', 'vegetable oil', 'butter', 'lard', 'margerine', 'oil']

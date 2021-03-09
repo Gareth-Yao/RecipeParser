@@ -4,12 +4,13 @@ import unicodedata
 from nltk import pos_tag, word_tokenize
 from fuzzywuzzy import fuzz
 import re
-from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs, prep_words, measure_words, descriptor_words, extra, vegetables
+from ingredients import meats, seafood, vegetarian_subs, herbs_spices, meat_subs, prep_words, measure_words, descriptor_words, extra, vegetables, dairy, oils
 import random
 import spacy
 from spacy.tokenizer import Tokenizer
 from spacy.lang.char_classes import ALPHA, ALPHA_LOWER, ALPHA_UPPER, CONCAT_QUOTES, LIST_ELLIPSES, LIST_ICONS
 from spacy.util import compile_infix_regex
+import copy
 
 def convertUnicode(s):
     newStr = ""
@@ -192,6 +193,71 @@ def format_ings(ings):
             temp += ' (optional)'
         res.append(temp.strip())
     return res 
+
+def to_healthy(ings):
+    h_ing = copy.deepcopy(ings)
+    for i in h_ing:
+        if i['name'] in vegetables or i['name'] + 's' in vegetables:
+            if 'organic' not in i['descriptor']:
+                i['descriptor'].insert(0, 'organic')
+        if i['name'] in meats or i['name'] + 's' in meats:
+            if 'fatty' in i['descriptor']:
+                i['descriptor'].remove('fatty')
+            if 'lean' not in i['descriptor']:
+                i['descriptor'].insert(0, 'lean')
+        if i['name'] in seafood or i['name'] + 's' in seafood:
+            if 'frozen' in i['descriptor']:
+                i['descriptor'].remove('frozen')
+            if 'fresh-caught' not in i['descriptor']:
+                i['descriptor'].insert(0, 'fresh-caught')
+        if i['name'] in herbs_spices or i['name'] + 's' in herbs_spices:
+            if 'fresh' not in i['descriptor']:
+                i['descriptor'].insert(0, 'fresh')
+        if i['name'] in dairy or i['name'] + 's' in dairy:
+            if 'full-fat' in i['descriptor']:
+                i['descriptor'].remove('full-fat')
+            if 'low-fat' not in i['descriptor']:
+                i['descriptor'].insert(0, 'low-fat')
+        if i['name'] in oils or i['name'] + 's' in oils:
+            i['name'] = 'oil'
+            i['descriptor'] = 'vegetable'
+        if 'sugar' in i['name']:
+            i['name'] = 'honey'
+            i['descriptor'] = 'organic'
+    return h_ing
+
+def to_unhealthy(ings):
+    u_ing = copy.deepcopy(ings)
+    for i in u_ing:
+        if i['name'] in vegetables or i['name'] + 's' in vegetables:
+            if 'organic' in i['descriptor']:
+                i['descriptor'].remove('organic')
+        if i['name'] in meats or i['name'] + 's' in meats:
+            if 'lean' in i['descriptor']:
+                i['descriptor'].remove('lean')
+            if 'fatty' not in i['descriptor']:
+                i['descriptor'].insert(0, 'fatty')
+        if i['name'] in seafood or i['name'] + 's' in seafood:
+            if 'fresh-caught' in i['descriptor']:
+                i['descriptor'].remove('fresh-caught')
+            if 'frozen' not in i['descriptor']:
+                i['descriptor'].insert(0, 'frozen')
+        if i['name'] in herbs_spices or i['name'] + 's' in herbs_spices:
+            if 'fresh' in i['descriptor']:
+                i['descriptor'].remove('fresh')
+        if i['name'] in dairy or i['name'] + 's' in dairy:
+            if 'low-fat' in i['descriptor']:
+                i['descriptor'].remove('low-fat')
+            if 'full-fat' not in i['descriptor']:
+                i['descriptor'].insert(0, 'full-fat')
+        if i['name'] in oils or i['name'] + 's' in oils:
+            i['name'] = 'lard'
+            i['descriptor'] = []
+        if 'honey' in i['name']:
+            i['name'] = 'sugar'
+            i['descriptor'] = 'white'
+    return u_ing
+        
 
 trial = 'https://www.allrecipes.com/recipe/60598/vegetarian-korma/'
 #trial = 'https://www.allrecipes.com/recipe/246631/savory-vegetarian-quinoa/'
