@@ -13,7 +13,10 @@ def RecipeParser(url, toVegetarian, toHealthy, toItalian):
         steps = Transformation.toVeggie(steps)
     else:
         steps = Transformation.fromVeggie(steps)
-
+    if toHealthy:
+        steps['ingredients'] = HTMLParser.to_healthy(steps['ingredients'])
+    else:
+        steps['ingredients'] = HTMLParser.from_healthy(steps['ingredients'])
     print("This Recipe Parse will transform", "\"" + results['name'] + "\"", "to:", "Italian" if toItalian else "", "Vegetarian" if toVegetarian else "Non-Vegetarian", "and", "Healthy" if toHealthy else "Non-Healthy")
     res = HTMLParser.format_ings(steps['ingredients'])
     print("The Ingredients are: ")
