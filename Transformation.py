@@ -3,6 +3,8 @@ import HTMLParser
 from ingredients import *
 import json
 import random
+import os
+import sys
 import spacy
 nlp = spacy.load("en_core_web_sm")
 url = "https://www.allrecipes.com/recipe/213654/chicken-asparagus-and-mushroom-skillet/"
@@ -38,6 +40,9 @@ def fromVeggie(steps):
     return steps
 
 def toItalian(url):
+    if not os.path.exists('Italian_Ingredients.json'):
+        print("Run StyleOfCuisine.py to generate italian cuisine ingredients first")
+        sys.exit()
     with open('Italian_Ingredients.json') as f:
         italian = json.load(f)
     steps = InstructionParser.parseToolsAndCookingMethod(url)
@@ -95,15 +100,31 @@ def toItalian(url):
         for i in s['ingredients'].keys():
             if s['ingredients'][i] in rep_map.keys():
                 s['instruction'] = s['instruction'].replace(i, rep_map[s['ingredients'][i]])
+        new_actions = []
         for a in s['action']:
             if a not in method_subs:
                 rep = rep_map.get(a, random.choice(method_subs))
                 rep_map[a] = rep
-                s['action'] = s['action'].replace(a, rep)
+                new_actions.append(rep)
                 ins = nlp(s['instruction'])
                 for token in ins:
                     if token.lemma_ == a:
-                        s['instruction'] = s['instruction'].replace(token.text, rep + token.suffix)
+                        suffix = ''
+                        if token.text.endswith('ing'):
+                                suffix = 'ing'
+                        elif token.text.endswith('ed'):
+                                suffix = 'ed'
+                        if suffix != '':
+                            if rep[-2] in ['a','e','i','o','u']:
+                                rep += rep[-1]
+                            elif rep[-1] == 'e':
+                                rep = rep[:-1]
+                            elif rep == 'fry' and suffix == 'ed':
+                                rep = 'fri'
+                        s['instruction'] = s['instruction'].replace(token.text, rep + suffix)
+            else:
+                new_actions.append(a)
+        s['action'] = new_actions
 
     steps['main_cooking_method'] = rep_map.get(steps['main_cooking_method'], steps['main_cooking_method'])
     steps['ingredients'] = new_ingredients

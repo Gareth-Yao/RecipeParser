@@ -26,7 +26,7 @@ def getMoreData(pageNum):
             link = root + recipe.attrs['href']
             results = HTMLParser.fetchAndParseHTML(link)
             ingredients = HTMLParser.get_ingredients(results['ingredients'])
-            steps = InstructionParser.parseToolsAndCookingMethod(link, replaceEmptyMainMethod=False)
+            steps = InstructionParser.parseToolsAndCookingMethod(results, replaceEmptyMainMethod=False)
             for ing in ingredients:
                 if ing['name'].lower() in meats or ing['name'].lower() in seafood:
                     Italian['protein'][ing['name'].lower()] = Italian['protein'].get(ing['name'].lower(), 0) + 1
@@ -50,7 +50,7 @@ try:
         link = recipe.findChildren("a", recursive=True)[0].attrs['href']
         results = HTMLParser.fetchAndParseHTML(link)
         ingredients = HTMLParser.get_ingredients(results['ingredients'])
-        steps = InstructionParser.parseToolsAndCookingMethod(link, replaceEmptyMainMethod=False)
+        steps = InstructionParser.parseToolsAndCookingMethod(results, replaceEmptyMainMethod=False)
         for ing in ingredients:
             if ing['name'].lower() in meats or ing['name'].lower() in seafood:
                 Italian['protein'][ing['name'].lower()] = Italian['protein'].get(ing['name'].lower(), 0) + 1
