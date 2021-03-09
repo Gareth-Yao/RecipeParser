@@ -3,6 +3,8 @@ import HTMLParser
 from ingredients import *
 import json
 import random
+import os
+import sys
 import spacy
 nlp = spacy.load("en_core_web_sm")
 url = "https://www.allrecipes.com/recipe/213654/chicken-asparagus-and-mushroom-skillet/"
@@ -38,6 +40,9 @@ def fromVeggie(steps):
     return steps
 
 def toItalian(url):
+    if not os.path.exists('Italian_Ingredients.json'):
+        print("Run StyleOfCuisine.py to generate italian cuisine ingredients first")
+        sys.exit()
     with open('Italian_Ingredients.json') as f:
         italian = json.load(f)
     steps = InstructionParser.parseToolsAndCookingMethod(url)

@@ -283,6 +283,6 @@ trial = 'https://www.allrecipes.com/recipe/60598/vegetarian-korma/'
 #trial = 'https://www.allrecipes.com/recipe/55174/baked-brie-with-caramelized-onions/'
 #trial = "https://www.allrecipes.com/recipe/254341/easy-paleo-chicken-marsala/"
 
-result = fetchAndParseHTML(trial)
-ingredients_parsed = get_ingredients(result["ingredients"])
-print(format_ings(ingredients_parsed))
+# result = fetchAndParseHTML(trial)
+# ingredients_parsed = get_ingredients(result["ingredients"])
+# print(format_ings(ingredients_parsed))
