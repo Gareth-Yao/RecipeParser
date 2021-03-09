@@ -20,8 +20,19 @@ def RecipeParser(url, toVegetarian, toHealthy, toItalian):
     for i in res:
         print(i)
     print()
+    print("The Tools are:")
+    for t in steps['tools']:
+        print(t)
+    print()
+    print("The Primary Cooking Method is:")
+    print(steps['main_cooking_method'])
+    print()
+    print("The Secondary Cooking Methods Are:")
+    print(steps['secondary_cooking_methods'])
+    print()
     print("The Steps Are:")
     counter = 1
+
     for s in steps['steps']:
         print(str(counter) + ".", s['instruction'])
         counter += 1
