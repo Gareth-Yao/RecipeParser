@@ -2,3 +2,5 @@ beautifulsoup4
 requests
 nltk
 fuzzywuzzy
+spacy
+word2number

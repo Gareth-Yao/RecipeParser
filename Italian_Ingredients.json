@@ -1,0 +1,42 @@
+{
+    "protein": {
+        "beef": 33,
+        "sausage": 14,
+        "pork": 8,
+        "tuna": 1
+    },
+    "spices": {
+        "garlic": 81,
+        "salt": 82,
+        "oregano": 42,
+        "basil": 43,
+        "rosemary": 8,
+        "cheese": 15,
+        "thyme": 12,
+        "carrots": 5,
+        "nutmeg": 1
+    },
+    "vegetables": {
+        "onion": 40,
+        "tomato": 30,
+        "parsley": 32,
+        "pepper": 70,
+        "paprika": 9,
+        "carrot": 7,
+        "beans": 4,
+        "spinach": 12,
+        "celery": 1,
+        "shallot": 1,
+        "capers": 2,
+        "chives": 1,
+        "eggplant": 1
+    },
+    "cooking methods": {
+        "": 52,
+        "simmer": 30,
+        "bake": 46,
+        "fry": 2,
+        "roast": 1,
+        "blanch": 1
+    }
+}
