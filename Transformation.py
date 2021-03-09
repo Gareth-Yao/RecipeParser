@@ -6,33 +6,32 @@ import random
 import spacy
 nlp = spacy.load("en_core_web_sm")
 url = "https://www.allrecipes.com/recipe/213654/chicken-asparagus-and-mushroom-skillet/"
-steps = HTMLParser.fetchAndParseHTML(url)
-def toVeggie(ingredients, steps): #ingredients is results['ingredients'] and steps is results ['steps']
-    replacements = HTMLParser.to_vegetarian(ingredients)
+def toVeggie(steps):
+    replacements = HTMLParser.to_vegetarian(steps['ingredients'])
     new_ingredients = []
-    for i in ingredients:
+    for i in steps['ingredients']:
         if i['name'] in replacements.keys():
             new_ingredients.append(replacements[i['name']])
         else:
             new_ingredients.append(i)
-    ingredients = new_ingredients
+    steps['ingredients'] = new_ingredients
 
-    for s in steps:
+    for s in steps['steps']:
         for i in s['ingredients'].keys():
             if s['ingredients'][i] in replacements.keys():
                 s['instruction'] = s['instruction'].replace(i, replacements[s['ingredients'][i]]['name'])
     return steps
 
-def fromVeggie(ingredients, steps):
-    replacements = HTMLParser.from_vegetarian(ingredients)
+def fromVeggie(steps):
+    replacements = HTMLParser.from_vegetarian(steps['ingredients'])
     new_ingredients = []
-    for i in ingredients:
+    for i in steps['ingredients']:
         if i['name'] in replacements.keys():
             new_ingredients.append(replacements[i['name']])
         else:
             new_ingredients.append(i)
-    ingredients = new_ingredients
-    for s in steps:
+    steps['ingredients'] = new_ingredients
+    for s in steps['steps']:
         for i in s['ingredients'].keys():
             if s['ingredients'][i] in replacements.keys():
                 s['instruction'] = s['instruction'].replace(i, replacements[s['ingredients'][i]]['name'])
@@ -107,9 +106,6 @@ def toItalian(url):
                         s['instruction'] = s['instruction'].replace(token.text, rep + token.suffix)
 
     steps['main_cooking_method'] = rep_map.get(steps['main_cooking_method'], steps['main_cooking_method'])
-    ingredients = new_ingredients
+    steps['ingredients'] = new_ingredients
 
     return steps
-
-# toItalian(url)
-# toVeggie(url)

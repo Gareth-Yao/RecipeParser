@@ -105,7 +105,7 @@ def parseToolsAndCookingMethod(results, replaceEmptyMainMethod = True):
            'ingredients' : ingredients_parsed,
            'tools' : tools,
            'steps' : steps}
-    print(ans)
+    # print(ans)
     return ans
 
 
