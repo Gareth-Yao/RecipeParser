@@ -34,20 +34,31 @@ def urlinput():
             sys.exit(0)
         results = HTMLParser.fetchAndParseHTML(url)
         if results == {}:
-            url = input("Invalid. Please try another url or type 'quit' to exit recipe parser: ")
+            url = input("Invalid. Please try another url or type 'quit' to exit recipe parser: \n")
         else:
             valid = True
     parserUI(results)
 def parserUI(results):
-    ingredients = HTMLParser.get_ingredients(results["ingredients"])
-    print_ing = "Ingredients:\n"
-    for ing in ingredients:
-        print_ing += ing + "\n"
+    ingredients = HTMLParser.format_ings(HTMLParser.get_ingredients(results["ingredients"]))
     tools_instructions = InstructionParser.parseToolsAndCookingMethod(results)
     active = True
     while active:
-        user = input("Enter corresponding number for desired info:\n1: Ingredients and Steps\n2:Tools\n3:Cooking Methods\n4:Transform to vegetarian\n5:Transform from vegetarian")
-    
+        user = input("Enter corresponding number for desired info:\n1:Ingredients and Steps\n2:Tools\n3:Cooking Methods\n4:Transform to vegetarian\n5:Transform from vegetarian\n6:Transform to healthy\n7:Transform from healthy\n8:Transform to Italian-style\n9:Enter a new recipe\n")
+        if int(user) == 1:
+            print_ing = "Ingredients:\n"
+            for ing in ingredients:
+                print_ing += ing + "\n"
+            print_steps = "Steps:\n"
+            for step in tools_instructions['steps']:
+                print_steps += step['instruction'] + "\n"
+            print(print_ing+print_steps)
+        elif int(user) == 2:
+            print_tools = "Tools:\n"
+            for tools in tools_instructions['tools']:
+                print_tools += tools + "\n"
+            print(print_tools)
+        else:
+            print("Hello")
     print(print_ing)
 
     

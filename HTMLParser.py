@@ -44,7 +44,7 @@ def fetchAndParseHTML(url):
         tags = soup.find("nav", {"class": "breadcrumbs__container"}).findChildren("a", recursive=True)
         tags = [' '.join(i.text.replace('\n', '').strip().split()).lower() for i in tags]
         tags = [i.replace(' recipes', '') for i in tags if i != 'home' and i != 'recipes']
-        return {"name": title, "servings": servings, "ingredients": ingredients, "instructions": instructions, 'tags' : tags}
+        return {"name": title, "servings": servings, "ingredients": ingredients, "instructions": instructions, "tags" : tags}
     except:
         print("Error Fetching Page Information")
         return {}
