@@ -27,6 +27,9 @@ def RecipeParser(url, toVegetarian, toHealthy, toItalian):
         counter += 1
 
 if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("Please Provide a Recipe URL")
+        sys.exit()
     url = sys.argv[1]
     toVegetarian = True
     toHealthy = True
