@@ -5,6 +5,9 @@ import Transformation
 # import keyboard
 def RecipeParser(url, toVegetarian, toHealthy, toItalian):
     results = HTMLParser.fetchAndParseHTML(url)
+    if len(results) == 0:
+        print("Please Provide a valid Recipe URL")
+        sys.exit()
     steps = {}
     if toItalian:
         steps = Transformation.toItalian(results)
