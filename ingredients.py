@@ -9,6 +9,7 @@ meats = {
     'venison',
     'buffalo',
     'bear',
+    'bacon',
     'turtle',
     'goat',
     'deer',
