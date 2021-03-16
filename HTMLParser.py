@@ -33,6 +33,7 @@ def convertUnicode(s):
 
 def fetchAndParseHTML(url):
     try:
+        url = url.strip()
         html_text = requests.get(url).text
         soup = BeautifulSoup(html_text, 'html.parser')
         title = soup.find("h1", {"class" : "headline"},text=True).text
