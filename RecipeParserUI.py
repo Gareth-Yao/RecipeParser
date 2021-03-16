@@ -180,6 +180,9 @@ def conversation(tools_instructions,ingredients):
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
             if 'yes' in prompt:
                 urlinput(False)
+        elif 'quit' in prompt:
+            print('Have a great meal. Goodbye.')
+            sys.exit()
         elif step < len(tools_instructions['steps']):
             user2 = input('Do you want to proceed to the next step?')
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
