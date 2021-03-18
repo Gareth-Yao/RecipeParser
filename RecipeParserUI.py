@@ -2,7 +2,6 @@ import sys
 import HTMLParser
 import InstructionParser
 import Transformation
-from textblob import TextBlob
 from fuzzywuzzy import fuzz
 import time
 import spacy
@@ -167,8 +166,8 @@ def conversation(tools_instructions,ingredients):
             user = nlp(user)
             target_step = 1
             for token in user:
-                if token.pos_ == 'NUM':
-                    target_step = int(token.text)
+                if token.pos_ == 'NUM' or token.ent_type_ == 'ORDINAL':
+                    target_step = int(token.text if token.pos_ == 'NUM' else token.text[:-2])
             user2 = input('Do you want to go to step ' + str(target_step) + "?")
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
             if 'yes' in prompt:
