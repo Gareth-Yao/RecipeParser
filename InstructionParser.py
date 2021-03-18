@@ -8,7 +8,7 @@ nlp = spacy.load("en_core_web_sm")
 target_preps = ["in","with","on","of"]
 non_tool = ["top","meat","side","sides",'heat']
 cooking_methods = ["bake","fry","roast","grill","steam","poach","simmer","broil","blanch","braise","stew", 'boil', "sautee", "stir fry", "brown", "sear"]
-secondary_methods = ['stir', 'cook', 'combine', 'season','garnish','mix','sprinkle','spray','spread'"chop", "slice", "dice", "mince", "grate", "zest"]
+secondary_methods = ['stir', 'cook', 'combine', 'season','garnish','mix','sprinkle','spray','spread'"chop", "slice", "dice", "mince", "grate", "zest", "preheat"]
 
 kitchen_tools = ["oven", "stove", "burner", "grill", "toaster", "pan", "non-stick pan", "pot", "dutch oven",
                  "knife", "chef's knife", "paring knife", "garlic press", "spoon", "bowl", "whisk", "grater",
