@@ -8,22 +8,33 @@ import spacy
 from text_to_num import alpha2digit
 from word2number import w2n
 from fractions import Fraction
+from InstructionParser import kitchen_tools, cooking_methods, secondary_methods
 nlp = spacy.load("en_core_web_sm")
 
 
 questions = [
     'how do i', #search for youtube
+    'how to', #search for youtube
     'how long do i', #time
     'when do i',  #which step
     'the ingredients', #show ingredients
     'what is', #Google
+    'what are', #Google
+    "what's", #Google
+    "what're", #Google
     'where can i', #Google
+    'where are', #Google
+    'where is', #Google
     'thanks', #possible next step
     'yes',
     'no',
     'previous step',
     'next step',
     'go to step', #go to a certain step
+    'jump to step',
+    'bring me to step',
+    'take me to step',
+    'show me step',
     "another recipe",
     'quit'
 ]
@@ -93,12 +104,36 @@ def conversation(tools_instructions,ingredients):
         elif 'quit' in prompt or user == '4':
             print('Have a great meal. Goodbye.')
             sys.exit()
-        elif 'how do i' in prompt:
-            query = 'https://www.youtube.com/results?search_query=' + user.replace(' ', '+')
+        elif 'how do i' in prompt or 'how to' in prompt:
+            vague = True
+            methods = cooking_methods + secondary_methods
+            for m in method:
+                if m in prompt:
+                    query = 'https://www.youtube.com/results?search_query=' + user.replace(' ', '+')
+                    vague = False
+                    break
+            if vague:
+                query = 'https://www.youtube.com/results?search_query=how+to+' + tools_instructions['steps'][step]['action']
             print('Here is the YouTube link for your question: ' + query)
-        elif 'what' in prompt or 'where' in prompt or 'who' in user.split() or 'which' in user.split():
+        elif 'what' in prompt:
+            if 'this' in prompt or 'that' in prompt:
+                try:
+                    query = 'https://www.google.com/search?q=what+is+' + tools_instructions['steps'][step]['tools'][0]
+                    print('Here is a link to Google results for your question: ' + query)
+                except Exception:
+                    print("Sorry, I'm not sure. Can you be more specific?")
+            elif 'these' in prompt or 'those' in prompt:
+                try:
+                    query = 'https://www.google.com/search?q=what+are+' + [i['name'] for i in tools_instructions['steps'][step]['ingredients']][0]
+                    print('Here is a link to Google results for your question: ' + query)
+                except Exception:
+                    print("Sorry, I'm not sure. Can you be more specific?")
+            else:
+                query = user.replace(' ', '+')
+                print('Here is a link to Google results for your question: ' + "https://www.google.com/search?q=" + query)
+        elif 'where' in prompt or 'who' in user.split() or 'which' in user.split():
             query = user.replace(' ', '+')
-            print('Here is a link to Google results for your question:' + "https://www.google.com/search?q=" + query)
+            print('Here is a link to Google results for your question: ' + "https://www.google.com/search?q=" + query)
         elif 'when' in prompt:
             temp = nlp(user)
             verb_phrase = ""
@@ -172,7 +207,7 @@ def conversation(tools_instructions,ingredients):
                 step -= 1
                 print('The previous step is:')
                 print(tools_instructions['steps'][step]['instruction'])
-        elif 'go to step' in prompt:
+        elif 'go to step' in prompt or 'jump to step' in prompt or 'bring me to step' in prompt or 'take me to step' in prompt or 'show me step' in prompt:
             user = alpha2digit(user, lang='en')
             user = nlp(user)
             target_step = 1
