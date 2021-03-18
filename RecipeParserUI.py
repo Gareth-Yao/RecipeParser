@@ -189,7 +189,7 @@ def conversation(tools_instructions,ingredients):
                     print('I cannot recognize the command, sorry.')
                     continue
                 time = 0
-                for i in range(0,len(tools_instructions['steps'])):
+                for i in range(step,len(tools_instructions['steps'])):
                     if verb_phrase in tools_instructions['steps'][i]['instruction'] and noun_phrase in tools_instructions['steps'][i]['ingredients'].keys():
                         temp2 = nlp(tools_instructions['steps'][i]['instruction'])
                         for token in temp2:
@@ -275,7 +275,7 @@ def conversation(tools_instructions,ingredients):
                 prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
                 if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
                     urlinput(False)
-        except:
+        except Exception:
             continue
 
 
