@@ -27,6 +27,8 @@ questions = [
     'where is', #Google
     'thanks', #possible next step
     'yes',
+    'sure',
+    'ok',
     'no',
     'previous step',
     'next step',
@@ -90,16 +92,16 @@ def conversation(tools_instructions,ingredients):
     step = 0
     #todo: implement conversation parser that will start after either ingredients or the first step is requested
     while True:
-        user = input("What next?")
+        user = input("What next? ")
         prompt = max(questions, key=lambda x : fuzz.token_sort_ratio(user, x))
         score1 = fuzz.token_sort_ratio(user, 'how do i')
         score2 = fuzz.token_sort_ratio(user, 'how long do i')
         if user == '':
             pass
         elif 'another recipe' in prompt or user == '3':
-            user2 = input('Would you like to enter another recipe?')
+            user2 = input('Would you like to enter another recipe? ')
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-            if 'yes' in prompt:
+            if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
                 urlinput(False)
         elif 'quit' in prompt or user == '4':
             print('Have a great meal. Goodbye.')
@@ -211,9 +213,9 @@ def conversation(tools_instructions,ingredients):
             if step == 0:
                 print('You are at the first step.')
                 continue
-            user2 = input('Do you want to go back to the previous step?')
+            user2 = input('Do you want to go back to the previous step? ')
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-            if 'yes' in prompt:
+            if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
                 step -= 1
                 print('The previous step is:')
                 print(tools_instructions['steps'][step]['instruction'])
@@ -224,9 +226,9 @@ def conversation(tools_instructions,ingredients):
             for token in user:
                 if token.pos_ == 'NUM' or token.ent_type_ == 'ORDINAL':
                     target_step = int(token.text if token.pos_ == 'NUM' else token.text[:-2])
-            user2 = input('Do you want to go to step ' + str(target_step) + "?")
+            user2 = input('Do you want to go to step ' + str(target_step) + "? ")
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-            if 'yes' in prompt:
+            if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
                 try:
                     valid_step = tools_instructions['steps'][target_step-1]['instruction']
                     step = target_step-1
@@ -235,16 +237,23 @@ def conversation(tools_instructions,ingredients):
                 except:
                     print('Please enter valid step number.')
         elif step < len(tools_instructions['steps']):
-            user2 = input('Do you want to proceed to the next step?')
+            user2 = input('Do you want to proceed to the next step? ')
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-            if 'yes' in prompt:
+            if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
                 step += 1
                 print('The next step is:')
                 print(tools_instructions['steps'][step]['instruction'])
+            elif 'no' in prompt:
+                user3 = input('Do you want to go back to the previous step? ')
+                prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user3, x))
+                if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
+                    step -= 1
+                    print('The previous step is:')
+                    print(tools_instructions['steps'][step]['instruction'])
         else:
-            user2 = input('That is the end of the recipe. Would you like to enter another recipe?')
+            user2 = input('That is the end of the recipe. Would you like to enter another recipe? ')
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-            if 'yes' in prompt:
+            if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
                 urlinput(False)
 
 
