@@ -160,7 +160,12 @@ def conversation(tools_instructions,ingredients):
                         if r.pos_ == 'NOUN':
                             noun_phrase += r.text_with_ws
                     break
-            noun_phrase = noun_phrase[:-1] if noun_phrase[-1] == ' ' else noun_phrase
+            try:
+                print(noun_phrase)
+                noun_phrase = noun_phrase[:-1] if noun_phrase[-1] == ' ' else noun_phrase
+            except:
+                print('I cannot recognize the command, sorry.')
+                continue
             target_step = -1
             for i in range(0,len(tools_instructions['steps'])):
                 if verb_phrase in tools_instructions['steps'][i]['instruction'] and noun_phrase in tools_instructions['steps'][i]['ingredients'].keys():
@@ -180,7 +185,11 @@ def conversation(tools_instructions,ingredients):
                         if r.pos_ == 'NOUN':
                             noun_phrase += r.text_with_ws
                     break
-            noun_phrase = noun_phrase[:-1] if noun_phrase[-1] == ' ' else noun_phrase
+            try:
+                noun_phrase = noun_phrase[:-1] if noun_phrase[-1] == ' ' else noun_phrase
+            except:
+                print('I cannot recognize the command, sorry.')
+                continue
             time = 0
             for i in range(0,len(tools_instructions['steps'])):
                 if verb_phrase in tools_instructions['steps'][i]['instruction'] and noun_phrase in tools_instructions['steps'][i]['ingredients'].keys():
@@ -245,15 +254,24 @@ def conversation(tools_instructions,ingredients):
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
             if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
                 step += 1
-                print('The next step is:')
-                print(tools_instructions['steps'][step]['instruction'])
+                if len(tools_instructions['steps']) == step:
+                    user2 = input('That is the end of the recipe. Would you like to enter another recipe? ')
+                    prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
+                    if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
+                        urlinput(False)
+                else:
+                    print('The next step is:')
+                    print(tools_instructions['steps'][step]['instruction'])
             elif 'no' in prompt:
                 user3 = input('Do you want to go back to the previous step? ')
                 prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user3, x))
                 if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
                     step -= 1
-                    print('The previous step is:')
-                    print(tools_instructions['steps'][step]['instruction'])
+                    if step == -1:
+                        print('You are at the first step.')
+                    else:
+                        print('The previous step is:')
+                        print(tools_instructions['steps'][step]['instruction'])
         else:
             user2 = input('That is the end of the recipe. Would you like to enter another recipe? ')
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
