@@ -40,6 +40,9 @@ questions = [
     "another recipe",
     'quit'
 ]
+
+num_dict = {"first":"1st", "second":"2nd", "third":"3rd"}
+
 def urlinput(first):
     if first: #detects if it's the first time looping
         url = input("Hi, my name is Eugene, and I'll be your virtual assistant today. Please enter an All-Recipe url to get started or type 'quit' to exit. \n")
@@ -220,6 +223,7 @@ def conversation(tools_instructions,ingredients):
                 print('The previous step is:')
                 print(tools_instructions['steps'][step]['instruction'])
         elif 'go to step' in prompt or 'jump to step' in prompt or 'bring me to step' in prompt or 'take me to step' in prompt or 'show me step' in prompt:
+            user = " ".join(num_dict.get(ele,ele) for ele in user.split())
             user = alpha2digit(user, lang='en')
             user = nlp(user)
             target_step = 1
