@@ -95,187 +95,188 @@ def conversation(tools_instructions,ingredients):
     step = 0
     #todo: implement conversation parser that will start after either ingredients or the first step is requested
     while True:
-        user = input("What next? ")
-        prompt = max(questions, key=lambda x : fuzz.token_sort_ratio(user, x))
-        score1 = fuzz.token_sort_ratio(user, 'how do i')
-        score2 = fuzz.token_sort_ratio(user, 'how long do i')
-        if user == '':
-            pass
-        elif 'another recipe' in prompt or user == '3':
-            user2 = input('Would you like to enter another recipe? ')
-            prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-            if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
-                urlinput(False)
-        elif 'quit' in prompt or user == '4':
-            print('Have a great meal. Goodbye.')
-            sys.exit()
-        elif 'how do i' in prompt or 'how to' in prompt:
-            vague = True
-            q_ = False
-            methods = cooking_methods + secondary_methods
-            for m in methods:
-                if m in user:
-                    query = 'https://www.youtube.com/results?search_query=' + user.replace(' ', '+')
-                    vague = False
-                    q_ = True
-                    break
-            if vague:
-                if len(tools_instructions['steps'][step]['action']) > 0:
-                    query = 'https://www.youtube.com/results?search_query=how+to+' + tools_instructions['steps'][step]['action'][0].replace(' ', '+')
-                    q_ = True
-                elif  len(tools_instructions['steps'][step]['secondary_action']) > 0:
-                    query = 'https://www.youtube.com/results?search_query=how+to+' + tools_instructions['steps'][step]['secondary_action'][0].replace(' ', '+')
-                    q_ = True
-            if q_:
-                print('Here is the YouTube link for your question: ' + query)
-            else:
-                print("Sorry, I'm not sure. Can you be more specific?")
-        elif 'what' in prompt:
-            if 'this' in user or 'that' in user:
-                try:
-                    query = 'https://www.google.com/search?q=what+is+' + tools_instructions['steps'][step]['tools'][0].replace(' ', '+')
-                    print('Here is a link to Google results for your question: ' + query)
-                except Exception:
+        try:
+            user = input("What next? ")
+            prompt = max(questions, key=lambda x : fuzz.token_sort_ratio(user, x))
+            if user == '':
+                pass
+            elif 'another recipe' in prompt or user == '3':
+                user2 = input('Would you like to enter another recipe? ')
+                prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
+                if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
+                    urlinput(False)
+            elif 'quit' in prompt or user == '4':
+                print('Have a great meal. Goodbye.')
+                sys.exit()
+            elif 'how do i' in prompt or 'how to' in prompt:
+                vague = True
+                q_ = False
+                methods = cooking_methods + secondary_methods
+                for m in methods:
+                    if m in user:
+                        query = 'https://www.youtube.com/results?search_query=' + user.replace(' ', '+')
+                        vague = False
+                        q_ = True
+                        break
+                if vague:
+                    if len(tools_instructions['steps'][step]['action']) > 0:
+                        query = 'https://www.youtube.com/results?search_query=how+to+' + tools_instructions['steps'][step]['action'][0].replace(' ', '+')
+                        q_ = True
+                    elif  len(tools_instructions['steps'][step]['secondary_action']) > 0:
+                        query = 'https://www.youtube.com/results?search_query=how+to+' + tools_instructions['steps'][step]['secondary_action'][0].replace(' ', '+')
+                        q_ = True
+                if q_:
+                    print('Here is the YouTube link for your question: ' + query)
+                else:
                     print("Sorry, I'm not sure. Can you be more specific?")
-            elif 'these' in user or 'those' in user:
-                try:
-                    query = 'https://www.google.com/search?q=what+are+' + [i['name'] for i in tools_instructions['steps'][step]['ingredients']][0].replace(' ', '+')
-                    print('Here is a link to Google results for your question: ' + query)
-                except Exception:
-                    print("Sorry, I'm not sure. Can you be more specific?")
-            else:
+            elif 'what' in prompt:
+                if 'this' in user or 'that' in user:
+                    try:
+                        query = 'https://www.google.com/search?q=what+is+' + tools_instructions['steps'][step]['tools'][0].replace(' ', '+')
+                        print('Here is a link to Google results for your question: ' + query)
+                    except Exception:
+                        print("Sorry, I'm not sure. Can you be more specific?")
+                elif 'these' in user or 'those' in user:
+                    try:
+                        query = 'https://www.google.com/search?q=what+are+' + [i['name'] for i in tools_instructions['steps'][step]['ingredients']][0].replace(' ', '+')
+                        print('Here is a link to Google results for your question: ' + query)
+                    except Exception:
+                        print("Sorry, I'm not sure. Can you be more specific?")
+                else:
+                    query = user.replace(' ', '+')
+                    print('Here is a link to Google results for your question: ' + "https://www.google.com/search?q=" + query)
+            elif 'where' in prompt or 'who' in user.split() or 'which' in user.split():
                 query = user.replace(' ', '+')
                 print('Here is a link to Google results for your question: ' + "https://www.google.com/search?q=" + query)
-        elif 'where' in prompt or 'who' in user.split() or 'which' in user.split():
-            query = user.replace(' ', '+')
-            print('Here is a link to Google results for your question: ' + "https://www.google.com/search?q=" + query)
-        elif 'when' in prompt:
-            temp = nlp(user)
-            verb_phrase = ""
-            noun_phrase = ""
-            for token in temp:
-                if token.pos_ == 'VERB':
-                    verb_phrase += token.text
-                    for r in token.rights:
-                        if r.pos_ == 'NOUN':
-                            noun_phrase += r.text_with_ws
-                    break
-            try:
-                noun_phrase = noun_phrase[:-1] if len(noun_phrase) > 0 and noun_phrase[-1] == ' ' else noun_phrase
-            except:
-                print('I cannot recognize the command, sorry.')
-                continue
-            target_step = -1
-            for i in range(step,len(tools_instructions['steps'])):
-                if verb_phrase in tools_instructions['steps'][i]['instruction'] and noun_phrase in tools_instructions['steps'][i]['ingredients'].keys():
-                    target_step = i
-            if target_step != -1:
-                print('In step ' + str(target_step + 1))
-            else:
-                print('I cannot find relevant information in the recipe, sorry.')
-        elif 'how long' in prompt:
-            temp = nlp(user)
-            verb_phrase = ""
-            noun_phrase = ""
-            for token in temp:
-                if token.pos_ == 'VERB':
-                    verb_phrase += token.text
-                    for r in token.rights:
-                        if r.pos_ == 'NOUN':
-                            noun_phrase += r.text_with_ws
-                    break
-            try:
-                noun_phrase = noun_phrase[:-1] if len(noun_phrase) > 0 and noun_phrase[-1] == ' ' else noun_phrase
-            except:
-                print('I cannot recognize the command, sorry.')
-                continue
-            time = 0
-            for i in range(0,len(tools_instructions['steps'])):
-                if verb_phrase in tools_instructions['steps'][i]['instruction'] and noun_phrase in tools_instructions['steps'][i]['ingredients'].keys():
-                    temp2 = nlp(tools_instructions['steps'][i]['instruction'])
-                    for token in temp2:
-                        if token.ent_type_ == 'TIME' and token.pos_ == "NUM":
-                            try:
-                                t = w2n.word_to_num(token.text)
-                                if "second" in token.head.text:
-                                    time += Fraction(t) / 60
-                                elif "minute" in token.head.text:
-                                    time += Fraction(t)
-                                else:
-                                    time += Fraction(t) * 60
-                            except ValueError:
-                                if "second" in token.head.text:
-                                    time += Fraction(token.text) / 60
-                                elif "minute" in token.head.text:
-                                    time += Fraction(token.text)
-                                else:
-                                    time += Fraction(token.text) * 60
-                    break
-            if time != 0:
-                print('For ' + str(time) + " minutes")
-            else:
-                print('It is not specified in the recipe. Sorry.')
-        elif 'ingredients' in prompt:
-            print_ing = "Here is the list of ingredients:\n"
-            for ing in ingredients:
-                print_ing += ing + "\n"
-            print(print_ing)
-        elif 'previous step' in prompt or 'go back' in user:
-            if step == 0:
-                print('You are at the first step.')
-                continue
-            user2 = input('Do you want to go back to the previous step? ')
-            prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-            if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
-                step -= 1
-                print('The previous step is:')
-                print(tools_instructions['steps'][step]['instruction'])
-        elif 'go to step' in prompt or 'jump to step' in prompt or 'bring me to step' in prompt or 'take me to step' in prompt or 'show me step' in prompt:
-            user = " ".join(num_dict.get(ele,ele) for ele in user.split())
-            user = alpha2digit(user, lang='en')
-            user = nlp(user)
-            target_step = 1
-            for token in user:
-                if token.pos_ == 'NUM' or token.ent_type_ == 'ORDINAL':
-                    target_step = int(token.text if token.pos_ == 'NUM' else token.text[:-2])
-            user2 = input('Do you want to go to step ' + str(target_step) + "? ")
-            prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-            if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
+            elif 'when' in prompt:
+                temp = nlp(user)
+                verb_phrase = ""
+                noun_phrase = ""
+                for token in temp:
+                    if token.pos_ == 'VERB':
+                        verb_phrase += token.text
+                        for r in token.rights:
+                            if r.pos_ == 'NOUN':
+                                noun_phrase += r.text_with_ws
+                        break
                 try:
-                    valid_step = tools_instructions['steps'][target_step-1]['instruction']
-                    step = target_step-1
-                    print("Step " + str(target_step) + ' is:')
-                    print(valid_step)
+                    noun_phrase = noun_phrase[:-1] if len(noun_phrase) > 0 and noun_phrase[-1] == ' ' else noun_phrase
                 except:
-                    print('Please enter valid step number.')
-        elif step < len(tools_instructions['steps']):
-            user2 = input('Do you want to proceed to the next step? ')
-            prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-            if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
-                step += 1
-                if len(tools_instructions['steps']) == step:
-                    user2 = input('That is the end of the recipe. Would you like to enter another recipe? ')
-                    prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-                    if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
-                        urlinput(False)
+                    print('I cannot recognize the command, sorry.')
+                    continue
+                target_step = -1
+                for i in range(step,len(tools_instructions['steps'])):
+                    if verb_phrase in tools_instructions['steps'][i]['instruction'] and noun_phrase in tools_instructions['steps'][i]['ingredients'].keys():
+                        target_step = i
+                if target_step != -1:
+                    print('In step ' + str(target_step + 1))
                 else:
-                    print('The next step is:')
-                    print(tools_instructions['steps'][step]['instruction'])
-            elif 'no' in prompt:
-                user3 = input('Do you want to go back to the previous step? ')
-                prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user3, x))
+                    print('I cannot find relevant information in the recipe, sorry.')
+            elif 'how long' in prompt:
+                temp = nlp(user)
+                verb_phrase = ""
+                noun_phrase = ""
+                for token in temp:
+                    if token.pos_ == 'VERB':
+                        verb_phrase += token.text
+                        for r in token.rights:
+                            if r.pos_ == 'NOUN':
+                                noun_phrase += r.text_with_ws
+                        break
+                try:
+                    noun_phrase = noun_phrase[:-1] if len(noun_phrase) > 0 and noun_phrase[-1] == ' ' else noun_phrase
+                except:
+                    print('I cannot recognize the command, sorry.')
+                    continue
+                time = 0
+                for i in range(0,len(tools_instructions['steps'])):
+                    if verb_phrase in tools_instructions['steps'][i]['instruction'] and noun_phrase in tools_instructions['steps'][i]['ingredients'].keys():
+                        temp2 = nlp(tools_instructions['steps'][i]['instruction'])
+                        for token in temp2:
+                            if token.ent_type_ == 'TIME' and token.pos_ == "NUM":
+                                try:
+                                    t = w2n.word_to_num(token.text)
+                                    if "second" in token.head.text:
+                                        time += Fraction(t) / 60
+                                    elif "minute" in token.head.text:
+                                        time += Fraction(t)
+                                    else:
+                                        time += Fraction(t) * 60
+                                except ValueError:
+                                    if "second" in token.head.text:
+                                        time += Fraction(token.text) / 60
+                                    elif "minute" in token.head.text:
+                                        time += Fraction(token.text)
+                                    else:
+                                        time += Fraction(token.text) * 60
+                        break
+                if time != 0:
+                    print('For ' + str(time) + " minutes")
+                else:
+                    print('It is not specified in the recipe. Sorry.')
+            elif 'ingredients' in prompt:
+                print_ing = "Here is the list of ingredients:\n"
+                for ing in ingredients:
+                    print_ing += ing + "\n"
+                print(print_ing)
+            elif 'previous step' in prompt or 'go back' in user:
+                if step == 0:
+                    print('You are at the first step.')
+                    continue
+                user2 = input('Do you want to go back to the previous step? ')
+                prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
                 if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
                     step -= 1
-                    if step == -1:
-                        print('You are at the first step.')
+                    print('The previous step is:')
+                    print(tools_instructions['steps'][step]['instruction'])
+            elif 'go to step' in prompt or 'jump to step' in prompt or 'bring me to step' in prompt or 'take me to step' in prompt or 'show me step' in prompt:
+                user = " ".join(num_dict.get(ele,ele) for ele in user.split())
+                user = alpha2digit(user, lang='en')
+                user = nlp(user)
+                target_step = 1
+                for token in user:
+                    if token.pos_ == 'NUM' or token.ent_type_ == 'ORDINAL':
+                        target_step = int(token.text if token.pos_ == 'NUM' else token.text[:-2])
+                user2 = input('Do you want to go to step ' + str(target_step) + "? ")
+                prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
+                if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
+                    try:
+                        valid_step = tools_instructions['steps'][target_step-1]['instruction']
+                        step = target_step-1
+                        print("Step " + str(target_step) + ' is:')
+                        print(valid_step)
+                    except:
+                        print('Please enter valid step number.')
+            elif step < len(tools_instructions['steps']):
+                user2 = input('Do you want to proceed to the next step? ')
+                prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
+                if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
+                    step += 1
+                    if len(tools_instructions['steps']) == step:
+                        user2 = input('That is the end of the recipe. Would you like to enter another recipe? ')
+                        prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
+                        if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
+                            urlinput(False)
                     else:
-                        print('The previous step is:')
+                        print('The next step is:')
                         print(tools_instructions['steps'][step]['instruction'])
-        else:
-            user2 = input('That is the end of the recipe. Would you like to enter another recipe? ')
-            prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-            if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
-                urlinput(False)
+                elif 'no' in prompt:
+                    user3 = input('Do you want to go back to the previous step? ')
+                    prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user3, x))
+                    if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
+                        step -= 1
+                        if step == -1:
+                            print('You are at the first step.')
+                        else:
+                            print('The previous step is:')
+                            print(tools_instructions['steps'][step]['instruction'])
+            else:
+                user2 = input('That is the end of the recipe. Would you like to enter another recipe? ')
+                prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
+                if 'yes' in prompt or 'sure' in prompt or 'ok' in prompt:
+                    urlinput(False)
+        except:
+            continue
 
 
 
