@@ -106,25 +106,35 @@ def conversation(tools_instructions,ingredients):
             sys.exit()
         elif 'how do i' in prompt or 'how to' in prompt:
             vague = True
+            q_ = False
             methods = cooking_methods + secondary_methods
-            for m in method:
-                if m in prompt:
+            for m in methods:
+                if m in user:
                     query = 'https://www.youtube.com/results?search_query=' + user.replace(' ', '+')
                     vague = False
+                    q_ = True
                     break
             if vague:
-                query = 'https://www.youtube.com/results?search_query=how+to+' + tools_instructions['steps'][step]['action']
-            print('Here is the YouTube link for your question: ' + query)
+                if len(tools_instructions['steps'][step]['action']) > 0:
+                    query = 'https://www.youtube.com/results?search_query=how+to+' + tools_instructions['steps'][step]['action'][0].replace(' ', '+')
+                    q_ = True
+                elif  len(tools_instructions['steps'][step]['secondary_action']) > 0:
+                    query = 'https://www.youtube.com/results?search_query=how+to+' + tools_instructions['steps'][step]['secondary_action'][0].replace(' ', '+')
+                    q_ = True
+            if q_:
+                print('Here is the YouTube link for your question: ' + query)
+            else:
+                print("Sorry, I'm not sure. Can you be more specific?")
         elif 'what' in prompt:
-            if 'this' in prompt or 'that' in prompt:
+            if 'this' in user or 'that' in user:
                 try:
-                    query = 'https://www.google.com/search?q=what+is+' + tools_instructions['steps'][step]['tools'][0]
+                    query = 'https://www.google.com/search?q=what+is+' + tools_instructions['steps'][step]['tools'][0].replace(' ', '+')
                     print('Here is a link to Google results for your question: ' + query)
                 except Exception:
                     print("Sorry, I'm not sure. Can you be more specific?")
-            elif 'these' in prompt or 'those' in prompt:
+            elif 'these' in user or 'those' in user:
                 try:
-                    query = 'https://www.google.com/search?q=what+are+' + [i['name'] for i in tools_instructions['steps'][step]['ingredients']][0]
+                    query = 'https://www.google.com/search?q=what+are+' + [i['name'] for i in tools_instructions['steps'][step]['ingredients']][0].replace(' ', '+')
                     print('Here is a link to Google results for your question: ' + query)
                 except Exception:
                     print("Sorry, I'm not sure. Can you be more specific?")
@@ -219,6 +229,7 @@ def conversation(tools_instructions,ingredients):
             if 'yes' in prompt:
                 try:
                     valid_step = tools_instructions['steps'][target_step-1]['instruction']
+                    step = target_step-1
                     print("Step " + str(target_step) + ' is:')
                     print(valid_step)
                 except:
