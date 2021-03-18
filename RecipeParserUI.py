@@ -51,7 +51,7 @@ def parserUI(results):
     first = True
     while active is True:
         if first:
-            user = input("I've found the recipe for \"" + results["name"] + "\". Would you like to: [1] look at the ingredients, [2] look at the steps, [3] enter another recipe, or [4] quit the conversation? \n")
+            user = input("I've found the recipe for \"" + results["name"] + "\".\nMAIN MENU:\n\n[1] look at the ingredients\n[2] look at the steps\n[3] enter another recipe\n[4] quit the conversation?\n\n")
         else:
             user = input("I'm sorry, I couldn't process that input. Would you like to: [1] look at the ingredients, [2] look at the steps, [3] enter another recipe, or [4] quit the conversation? \n")
         if user == '1':
@@ -75,6 +75,7 @@ def parserUI(results):
         else:
             first = False
 def conversation(tools_instructions,ingredients):
+    print("CONVERSATION MODE")
     step = 0
     #todo: implement conversation parser that will start after either ingredients or the first step is requested
     while True:
@@ -82,7 +83,17 @@ def conversation(tools_instructions,ingredients):
         prompt = max(questions, key=lambda x : fuzz.token_sort_ratio(user, x))
         score1 = fuzz.token_sort_ratio(user, 'how do i')
         score2 = fuzz.token_sort_ratio(user, 'how long do i')
-        if 'how do i' in prompt:
+        if user == '':
+            pass
+        elif 'another recipe' in prompt or user == '3':
+            user2 = input('Would you like to enter another recipe?')
+            prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
+            if 'yes' in prompt:
+                urlinput(False)
+        elif 'quit' in prompt or user == '4':
+            print('Have a great meal. Goodbye.')
+            sys.exit()
+        elif 'how do i' in prompt:
             query = 'https://www.youtube.com/results?search_query=' + user.replace(' ', '+')
             print('Here is the YouTube link for your question: ' + query)
         elif 'what' in prompt or 'where' in prompt or 'who' in user.split() or 'which' in user.split():
@@ -171,17 +182,12 @@ def conversation(tools_instructions,ingredients):
             user2 = input('Do you want to go to step ' + str(target_step) + "?")
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
             if 'yes' in prompt:
-                print("Step " + str(target_step) + ' is:')
-                step = target_step - 1
-                print(tools_instructions['steps'][step]['instruction'])
-        elif 'another recipe' in prompt:
-            user2 = input('Would you like to enter another recipe?')
-            prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
-            if 'yes' in prompt:
-                urlinput(False)
-        elif 'quit' in prompt:
-            print('Have a great meal. Goodbye.')
-            sys.exit()
+                try:
+                    valid_step = tools_instructions['steps'][target_step-1]['instruction']
+                    print("Step " + str(target_step) + ' is:')
+                    print(valid_step)
+                except:
+                    print('Please enter valid step number.')
         elif step < len(tools_instructions['steps']):
             user2 = input('Do you want to proceed to the next step?')
             prompt = max(questions, key=lambda x: fuzz.token_sort_ratio(user2, x))
