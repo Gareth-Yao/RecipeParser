@@ -161,13 +161,12 @@ def conversation(tools_instructions,ingredients):
                             noun_phrase += r.text_with_ws
                     break
             try:
-                print(noun_phrase)
-                noun_phrase = noun_phrase[:-1] if noun_phrase[-1] == ' ' else noun_phrase
+                noun_phrase = noun_phrase[:-1] if len(noun_phrase) > 0 and noun_phrase[-1] == ' ' else noun_phrase
             except:
                 print('I cannot recognize the command, sorry.')
                 continue
             target_step = -1
-            for i in range(0,len(tools_instructions['steps'])):
+            for i in range(step,len(tools_instructions['steps'])):
                 if verb_phrase in tools_instructions['steps'][i]['instruction'] and noun_phrase in tools_instructions['steps'][i]['ingredients'].keys():
                     target_step = i
             if target_step != -1:
@@ -186,7 +185,7 @@ def conversation(tools_instructions,ingredients):
                             noun_phrase += r.text_with_ws
                     break
             try:
-                noun_phrase = noun_phrase[:-1] if noun_phrase[-1] == ' ' else noun_phrase
+                noun_phrase = noun_phrase[:-1] if len(noun_phrase) > 0 and noun_phrase[-1] == ' ' else noun_phrase
             except:
                 print('I cannot recognize the command, sorry.')
                 continue
